@@ -1,6 +1,7 @@
 import sqlite3
 from flask import Flask
 from app.routes.dashboard import dashboard_bp
+from app.routes.news import news_bp
 import os
 
 def create_app():
@@ -15,6 +16,7 @@ def create_app():
 
     # Register blueprints
     app.register_blueprint(dashboard_bp)
+    app.register_blueprint(news_bp)
 
     return app
 
