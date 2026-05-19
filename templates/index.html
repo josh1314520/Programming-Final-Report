@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- 側邊控制面板 -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4">
+            <h4 class="mb-4">投資設定</h4>
+            <form id="simulateForm">
+                <div class="mb-3">
+                    <label for="ticker" class="form-label">股票代碼</label>
+                    <input type="text" class="form-control" id="ticker" placeholder="例如: AAPL, TSLA, 2330.TW" required>
+                    <div class="form-text text-light-50">支援美股與台股 (台股請加 .TW)</div>
+                </div>
+                <div class="mb-3">
+                    <label for="monthlyInvestment" class="form-label">每月投資金額 (貨幣單位)</label>
+                    <input type="number" class="form-control" id="monthlyInvestment" min="1" value="1000" required>
+                </div>
+                <div class="mb-4">
+                    <label for="years" class="form-label">投資年限</label>
+                    <select class="form-select" id="years" required>
+                        <option value="1">1 年</option>
+                        <option value="3">3 年</option>
+                        <option value="5" selected>5 年</option>
+                        <option value="10">10 年</option>
+                        <option value="20">20 年</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100" id="submitBtn">
+                    <span class="spinner-border spinner-border-sm d-none" id="loadingSpinner" role="status" aria-hidden="true"></span>
+                    開始試算
+                </button>
+            </form>
+            <div id="errorMessage" class="alert alert-danger mt-3 d-none"></div>
+        </div>
+        
+        <!-- 摘要結果 (預設隱藏) -->
+        <div id="summaryCard" class="glass-card p-4 mt-4 d-none">
+            <h5 class="mb-3">試算摘要</h5>
+            <div class="d-flex justify-content-between mb-2">
+                <span>總投入成本:</span>
+                <strong id="sumInvested" class="text-info">--</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span>最終資產市值:</span>
+                <strong id="sumValue" class="text-success">--</strong>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between align-items-center">
+                <span>總報酬率:</span>
+                <h4 id="sumReturn" class="mb-0">--</h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- 呈現圖表區塊 -->
+    <div class="col-lg-8">
+        <div class="glass-card p-4 h-100 d-flex flex-column">
+            <h4 class="mb-4">資產成長曲線</h4>
+            <div class="chart-container flex-grow-1" style="position: relative; min-height: 400px;">
+                <canvas id="growthChart"></canvas>
+            </div>
+            <div id="chartPlaceholder" class="text-center text-muted mt-5">
+                <p>請在左側輸入設定並點擊「開始試算」</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
