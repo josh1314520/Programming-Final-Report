@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import json
-from app import create_app
+from main import create_app
 from database.init_db import init_db
 
 def run_tests():
@@ -39,6 +39,16 @@ def run_tests():
         "user_id": 1,
         "asset_value": 60000,
         "risk_tolerance": "aggressive"
+    })
+    print(f"Status Code: {response.status_code}")
+    print(f"Response: {json.dumps(response.get_json(), ensure_ascii=False, indent=2)}")
+    
+    # 測試 D: 千萬資產測試 (對數壓制)
+    print("\n[測試 D] 更新用戶狀態 (穩健型, 資產 15000000)")
+    response = client.post('/api/guardian/update', json={
+        "user_id": 1,
+        "asset_value": 15000000,
+        "risk_tolerance": "balanced"
     })
     print(f"Status Code: {response.status_code}")
     print(f"Response: {json.dumps(response.get_json(), ensure_ascii=False, indent=2)}")

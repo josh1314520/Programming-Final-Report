@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app.models.guardian import get_guardian, update_guardian_status
 
-api_bp = Blueprint('api', __name__)
+guardian_bp = Blueprint('guardian', __name__)
 
-@api_bp.route('/guardian/status', methods=['GET'])
+@guardian_bp.route('/status', methods=['GET'])
 def get_status():
     user_id = request.args.get('user_id')
     
@@ -35,7 +35,7 @@ def get_status():
     
     return jsonify(response_data), 200
 
-@api_bp.route('/guardian/update', methods=['POST'])
+@guardian_bp.route('/update', methods=['POST'])
 def update_status():
     data = request.get_json()
     
