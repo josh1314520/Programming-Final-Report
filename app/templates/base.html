@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}冒險者金庫 - 守護靈裝備系統{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/style.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- 自訂核心樣式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- 頂部高質感導覽列 -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top glass-panel mx-3 mt-3 px-3">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.dashboard') }}">
+                <span class="fs-4">🔱</span>
+                <span>冒險者金庫</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item ms-lg-3">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{{ url_for('main.dashboard') }}">
+                            <i class="bi bi-speedometer2 me-1"></i> 控制面板
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="nav-link {% if request.path == '/guardians' %}active{% endif %}" href="{{ url_for('main.guardian_hall') }}">
+                            <i class="bi bi-shield-shaded me-1"></i> 守護靈殿堂
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="nav-link {% if request.path == '/equipment' %}active{% endif %}" href="{{ url_for('main.equipment_vault') }}">
+                            <i class="bi bi-gem me-1"></i> 裝備寶庫
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="nav-link {% if request.path == '/summon' %}active{% endif %}" href="{{ url_for('main.summon_altar') }}">
+                            <i class="bi bi-stars me-1"></i> 召喚祭壇
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- 玩家資源與每日補給按鈕 -->
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <button class="btn btn-sm btn-secondary-glass py-2" id="btn-daily-supply" onclick="claimDailySupply()">
+                        <i class="bi bi-gift-fill text-warning me-1"></i> 每日補給
+                    </button>
+                    <div class="resource-badge badge-gold" id="player-gold-display">
+                        <i class="bi bi-coin"></i> <span id="player-gold">{{ player.gold }}</span>
+                    </div>
+                    <div class="resource-badge badge-stones" id="player-stones-display">
+                        <i class="bi bi-gem"></i> <span id="player-stones">{{ player.soul_stones }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主內容呈現區 -->
+    <main class="container-fluid my-4 px-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 全域通知彈跳面板 -->
+    <div id="global-toast" class="custom-alert d-flex align-items-start gap-3">
+        <span id="toast-icon" class="fs-4"></span>
+        <div>
+            <h6 id="toast-title" class="mb-1 text-white fw-bold">系統通知</h6>
+            <p id="toast-message" class="mb-0 text-secondary" style="font-size: 0.85rem;"></p>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS (含 Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    
+    <!-- 全域通用 AJAX 處理 JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

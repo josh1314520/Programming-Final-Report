@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}裝備寶庫 - 冒險者金庫{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="text-white fw-extrabold mb-1"><i class="bi bi-gem text-purple me-2" style="color: #d17cff;"></i>裝備寶庫</h2>
+        <p class="text-secondary mb-0">在此管理您擁有的全部武器、防具與飾品，提升裝備的強化等級以加成大量屬性，或將閒置裝備出售獲取金幣。</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+            <i class="bi bi-stars me-1"></i> 召喚神兵
+        </a>
+    </div>
+</div>
+
+<!-- 分類篩選導覽列 -->
+<div class="glass-panel p-2 mb-4 d-flex gap-2 flex-wrap">
+    <button class="btn btn-sm btn-primary-glow px-3 py-2" id="filter-all" onclick="filterEquipment('all')">全部裝備</button>
+    <button class="btn btn-sm btn-secondary-glass px-3 py-2" id="filter-weapon" onclick="filterEquipment('weapon')">⚔️ 武器</button>
+    <button class="btn btn-sm btn-secondary-glass px-3 py-2" id="filter-armor" onclick="filterEquipment('armor')">🛡️ 防具</button>
+    <button class="btn btn-sm btn-secondary-glass px-3 py-2" id="filter-accessory" onclick="filterEquipment('accessory')">📿 飾品</button>
+</div>
+
+<!-- 裝備清單 -->
+<div class="row g-4" id="equipment-list-container">
+    {% if equipments %}
+        {% for eq in equipments %}
+        <div class="col-xl-3 col-md-6 equipment-item-card" data-type="{{ eq.type }}" id="equipment-card-{{ eq.id }}">
+            <div class="glass-panel p-3 equipment-card rarity-{{ eq.rarity }} h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <!-- 稀有度標籤與強化等級 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-rarity {{ eq.rarity }}">{{ eq.rarity }}</span>
+                        <span class="text-warning fw-bold small"><i class="bi bi-lightning-fill"></i> +<span class="equip-level">{{ eq.level }}</span></span>
+                    </div>
+                    
+                    <h5 class="text-white fw-bold mb-1">{{ eq.name }}</h5>
+                    <span class="text-secondary small d-block mb-3">
+                        {% if eq.type == 'weapon' %}⚔️ 武器{% elif eq.type == 'armor' %}🛡️ 防具{% else %}📿 飾品{% endif %}
+                    </span>
+                    
+                    <!-- 屬性加成展示 -->
+                    <div class="bg-black-opacity p-2 rounded mb-3 small">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary">生命加成</span>
+                            <strong class="text-white equip-hp">+<span class="val">{{ eq.hp_bonus }}</span></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary">攻擊加成</span>
+                            <strong class="text-white equip-atk">+<span class="val">{{ eq.atk_bonus }}</span></strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary">防禦加成</span>
+                            <strong class="text-white equip-def">+<span class="val">{{ eq.def_bonus }}</span></strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部按鈕與狀態 -->
+                <div class="mt-auto">
+                    <div class="mb-3 small d-flex justify-content-between align-items-center">
+                        <span class="text-secondary">狀態</span>
+                        {% if eq.guardian_id %}
+                            <span class="badge bg-success-opacity text-success">
+                                穿戴於 <strong class="text-white">{{ eq.guardian_name }}</strong>
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary-opacity text-secondary">在背包中</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row g-2">
+                        <!-- 強化按鈕 -->
+                        <div class="col-8">
+                            <!-- 強化金額公式 -->
+                            {% set cost = 0 %}
+                            {% if eq.rarity == 'Common' %}{% set cost = (eq.level * 500 * 1.0)|int %}
+                            {% elif eq.rarity == 'Rare' %}{% set cost = (eq.level * 500 * 1.5)|int %}
+                            {% elif eq.rarity == 'Epic' %}{% set cost = (eq.level * 500 * 2.5)|int %}
+                            {% elif eq.rarity == 'Legendary' %}{% set cost = (eq.level * 500 * 4.0)|int %}
+                            {% endif %}
+                            
+                            <button class="btn btn-sm btn-primary-glow w-100 py-2 btn-upgrade-equip" 
+                                    onclick="upgradeEquipment('{{ eq.id }}')"
+                                    title="消耗 {{ cost }} 金幣進行強化">
+                                <i class="bi bi-hammer me-1"></i> 強化 (<span class="upgrade-cost">{{ cost }}</span>)
+                            </button>
+                        </div>
+                        <!-- 出售按鈕 -->
+                        <div class="col-4">
+                            <button class="btn btn-sm btn-danger-glass w-100 py-2 btn-sell-equip" 
+                                    {% if eq.guardian_id %}disabled{% endif %} 
+                                    onclick="sellEquipment('{{ eq.id }}', '{{ eq.name }}')">
+                                出售
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-panel p-5 d-inline-block max-w-md">
+                <span class="fs-1 text-secondary mb-3 d-block">⚔️</span>
+                <h4 class="text-white fw-bold mb-3">寶庫空空如也...</h4>
+                <p class="text-secondary mb-4">你的冒險包包裡沒有多餘的裝備。立即前往召喚祭壇抽取一些神裝吧！</p>
+                <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+                    <i class="bi bi-stars me-1"></i> 前往召喚
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function filterEquipment(type) {
+        // 更新按鈕樣式
+        document.querySelectorAll('.glass-panel button').forEach(btn => {
+            btn.classList.remove('btn-primary-glow');
+            btn.classList.add('btn-secondary-glass');
+        });
+        
+        const activeBtn = document.getElementById('filter-' + type);
+        activeBtn.classList.remove('btn-secondary-glass');
+        activeBtn.classList.add('btn-primary-glow');
+        
+        // 篩選卡牌
+        const cards = document.querySelectorAll('.equipment-item-card');
+        cards.forEach(card => {
+            if (type === 'all' || card.getAttribute('data-type') === type) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

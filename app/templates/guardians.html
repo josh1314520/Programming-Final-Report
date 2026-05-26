@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}守護靈殿堂 - 冒險者金庫{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="text-white fw-extrabold mb-1"><i class="bi bi-shield-shaded text-info me-2"></i>守護靈殿堂</h2>
+        <p class="text-secondary mb-0">在此培養並解鎖守護靈的潛能，為它們搭配神兵利器，大幅提高冒險小隊的總戰力。</p>
+    </div>
+    <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+        <i class="bi bi-stars me-1"></i> 契約召喚
+    </a>
+</div>
+
+<div class="row g-4" id="guardians-container">
+    {% if guardians %}
+        {% for g in guardians %}
+        <div class="col-xl-4 col-md-6" id="guardian-card-{{ g.id }}">
+            <div class="glass-panel p-4 guardian-card element-{{ g.element }} d-flex flex-column justify-content-between h-100">
+                <!-- 卡牌頂部資訊 -->
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge element-pill {{ g.element }}">{{ g.element }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-warning fw-bold"><i class="bi bi-shield-fill"></i> Lv.<span class="guardian-level">{{ g.level }}</span></span>
+                            <button class="btn btn-sm btn-danger-glass p-1 px-2 border-0" onclick="confirmReleaseGuardian('{{ g.id }}', '{{ g.name }}')" title="遣散此守護靈">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="text-white fw-bold mb-3">{{ g.name }}</h3>
+                    
+                    <!-- 虛擬立繪浮空展示 -->
+                    <div class="spirit-avatar-container my-3">
+                        {% if g.element == 'Fire' %}
+                        <span class="spirit-illustration Fire">🔥</span>
+                        {% elif g.element == 'Water' %}
+                        <span class="spirit-illustration Water">💧</span>
+                        {% elif g.element == 'Wind' %}
+                        <span class="spirit-illustration Wind">🌪️</span>
+                        {% elif g.element == 'Earth' %}
+                        <span class="spirit-illustration Earth">🛡️</span>
+                        {% elif g.element == 'Light' %}
+                        <span class="spirit-illustration Light">☀️</span>
+                        {% elif g.element == 'Shadow' %}
+                        <span class="spirit-illustration Shadow">😈</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- 經驗條區塊 -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between text-secondary small mb-1">
+                            <span>修煉經驗值</span>
+                            <span><span class="guardian-xp">{{ g.xp }}</span> / <span class="guardian-max-xp">{{ g.max_xp }}</span></span>
+                        </div>
+                        <div class="exp-progress-container">
+                            <div class="exp-progress-bar" style="width: {{ (g.xp / g.max_xp) * 100 }}%"></div>
+                        </div>
+                    </div>
+
+                    <!-- 戰術裝備插槽列 -->
+                    <h6 class="text-secondary small fw-bold mb-2">裝備槽</h6>
+                    <div class="equip-slots-container">
+                        <!-- 武器槽 -->
+                        {% set weapon = g.equipment.weapon %}
+                        <div class="equip-slot {% if weapon %}filled rarity-{{ weapon.rarity }}{% endif %}" 
+                             onclick="handleSlotClick('{{ g.id }}', 'weapon', {{ 'true' if weapon else 'false' }}, '{{ weapon.id if weapon else '' }}')">
+                            {% if weapon %}
+                                <span class="slot-icon">⚔️</span>
+                                <span class="slot-label text-truncate w-100 px-1">{{ weapon.name }}</span>
+                                <span class="level-badge">+{{ weapon.level }}</span>
+                            {% else %}
+                                <span class="slot-icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                                <span class="slot-label">武器</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- 防具槽 -->
+                        {% set armor = g.equipment.armor %}
+                        <div class="equip-slot {% if armor %}filled rarity-{{ armor.rarity }}{% endif %}" 
+                             onclick="handleSlotClick('{{ g.id }}', 'armor', {{ 'true' if armor else 'false' }}, '{{ armor.id if armor else '' }}')">
+                            {% if armor %}
+                                <span class="slot-icon">🛡️</span>
+                                <span class="slot-label text-truncate w-100 px-1">{{ armor.name }}</span>
+                                <span class="level-badge">+{{ armor.level }}</span>
+                            {% else %}
+                                <span class="slot-icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                                <span class="slot-label">防具</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- 飾品槽 -->
+                        {% set accessory = g.equipment.accessory %}
+                        <div class="equip-slot {% if accessory %}filled rarity-{{ accessory.rarity }}{% endif %}" 
+                             onclick="handleSlotClick('{{ g.id }}', 'accessory', {{ 'true' if accessory else 'false' }}, '{{ accessory.id if accessory else '' }}')">
+                            {% if accessory %}
+                                <span class="slot-icon">📿</span>
+                                <span class="slot-label text-truncate w-100 px-1">{{ accessory.name }}</span>
+                                <span class="level-badge">+{{ accessory.level }}</span>
+                            {% else %}
+                                <span class="slot-icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                                <span class="slot-label">飾品</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 屬性數值面板 -->
+                <div class="mt-auto pt-3 border-top border-secondary-subtle">
+                    <div class="row g-2 mb-3">
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-black-opacity text-center small">
+                                <span class="text-secondary d-block">生命力</span>
+                                <strong class="text-white guardian-hp">{{ g.total_hp }}</strong>
+                                <span class="text-success small guardian-hp-base">({{ g.base_hp }})</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-black-opacity text-center small">
+                                <span class="text-secondary d-block">攻擊力</span>
+                                <strong class="text-white guardian-atk">{{ g.total_atk }}</strong>
+                                <span class="text-success small guardian-atk-base">({{ g.base_atk }})</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-2 rounded bg-black-opacity text-center small">
+                                <span class="text-secondary d-block">防禦力</span>
+                                <strong class="text-white guardian-def">{{ g.total_def }}</strong>
+                                <span class="text-success small guardian-def-base">({{ g.base_def }})</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-secondary fw-semibold">守護靈戰力</span>
+                        <span class="power-display guardian-power">{{ g.power }}</span>
+                    </div>
+
+                    <button class="btn btn-primary-glow w-100 py-2.5" onclick="feedGuardian('{{ g.id }}')">
+                        <i class="bi bi-cookie me-1"></i> 修煉餵食 (消耗 <span class="feed-cost">{{ g.level * 150 }}</span> 金幣)
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-panel p-5 d-inline-block max-w-md">
+                <span class="fs-1 text-secondary mb-3 d-block">🔱</span>
+                <h4 class="text-white fw-bold mb-3">殿堂空無一人...</h4>
+                <p class="text-secondary mb-4">你尚未召喚任何守護靈。立即前往召喚法陣，啟動契約！</p>
+                <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+                    <i class="bi bi-stars me-1"></i> 進行召喚
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ================= 裝備選擇玻璃彈窗 (Equip Modal) ================= -->
+<div class="modal fade" id="equipSelectorModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel text-white border-0 shadow-lg">
+            <div class="modal-header border-bottom border-secondary-subtle py-3">
+                <h5 class="modal-title fw-bold" id="equipModalTitle">選擇裝備</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4" style="max-height: 400px; overflow-y: auto;">
+                <input type="hidden" id="modal-guardian-id">
+                <input type="hidden" id="modal-slot-type">
+                
+                <!-- 裝備清單 -->
+                <div id="equip-options-container" class="d-flex flex-column gap-2">
+                    <!-- JS 動態渲染或隱藏 -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= 卸下裝備確認彈窗 (Unequip Option Modal) ================= -->
+<div class="modal fade" id="unequipModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content glass-panel text-white border-0">
+            <div class="modal-header border-bottom border-secondary-subtle py-3">
+                <h5 class="modal-title fw-bold">裝備操作</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <input type="hidden" id="unequip-guardian-id">
+                <input type="hidden" id="unequip-equipment-id">
+                <p class="text-secondary small mb-3">您想要對穿載中的裝備執行什麼操作？</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary-glow" id="btn-unequip-action" onclick="unequipItem()">
+                        <i class="bi bi-box-arrow-left me-1"></i> 卸下此裝備
+                    </button>
+                    <a class="btn btn-secondary-glass" id="link-upgrade-equip" href="{{ url_for('main.equipment_vault') }}">
+                        <i class="bi bi-lightning-charge me-1"></i> 前往強化裝備
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 預先將 Jinja2 渲染的未裝備道具轉為 JS 可讀的結構
+    const unequippedWeapons = [
+        {% for eq in unequipped_weapons %}
+        {
+            id: "{{ eq.id }}",
+            name: "{{ eq.name }}",
+            type: "{{ eq.type }}",
+            rarity: "{{ eq.rarity }}",
+            level: {{ eq.level }},
+            hp: {{ eq.hp_bonus }},
+            atk: {{ eq.atk_bonus }},
+            def: {{ eq.def_bonus }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const unequippedArmors = [
+        {% for eq in unequipped_armors %}
+        {
+            id: "{{ eq.id }}",
+            name: "{{ eq.name }}",
+            type: "{{ eq.type }}",
+            rarity: "{{ eq.rarity }}",
+            level: {{ eq.level }},
+            hp: {{ eq.hp_bonus }},
+            atk: {{ eq.atk_bonus }},
+            def: {{ eq.def_bonus }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    const unequippedAccessories = [
+        {% for eq in unequipped_accessories %}
+        {
+            id: "{{ eq.id }}",
+            name: "{{ eq.name }}",
+            type: "{{ eq.type }}",
+            rarity: "{{ eq.rarity }}",
+            level: {{ eq.level }},
+            hp: {{ eq.hp_bonus }},
+            atk: {{ eq.atk_bonus }},
+            def: {{ eq.def_bonus }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+</script>
+{% endblock %}

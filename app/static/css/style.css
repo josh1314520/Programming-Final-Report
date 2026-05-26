@@ -1,0 +1,558 @@
+/* 冒險者金庫 - 守護靈裝備系統 核心設計樣式 */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;500;700;900&display=swap');
+
+:root {
+    --bg-dark: #080a0f;
+    --card-bg: rgba(17, 21, 32, 0.65);
+    --border-color: rgba(255, 255, 255, 0.07);
+    --text-primary: #f0f2f5;
+    --text-secondary: #9aa0a6;
+    
+    /* 稀有度色彩 */
+    --rarity-legendary: #ffaa00;
+    --rarity-epic: #c300ff;
+    --rarity-rare: #0099ff;
+    --rarity-common: #8e9297;
+    
+    /* 屬性漸層 */
+    --element-fire: linear-gradient(135deg, #ff416c, #ff4b2b);
+    --element-water: linear-gradient(135deg, #00c6ff, #0072ff);
+    --element-wind: linear-gradient(135deg, #11998e, #38ef7d);
+    --element-earth: linear-gradient(135deg, #a770ef, #cf8bf3, #fdbb2d);
+    --element-light: linear-gradient(135deg, #ffe259, #ffa751);
+    --element-shadow: linear-gradient(135deg, #4e54c8, #8f94fb);
+    
+    /* 發光效果 */
+    --glow-legendary: 0 0 20px rgba(255, 170, 0, 0.5);
+    --glow-epic: 0 0 20px rgba(195, 0, 255, 0.5);
+    --glow-rare: 0 0 20px rgba(0, 153, 255, 0.5);
+    --glow-common: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(78, 84, 200, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(255, 65, 108, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(0, 198, 255, 0.05) 0%, transparent 50%);
+    background-attachment: fixed;
+}
+
+/* 全域毛玻璃樣式 */
+.glass-panel {
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.glass-panel:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* 導覽列優化 */
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fff 30%, #ffa751 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.navbar {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 資源徽章 */
+.resource-badge {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.badge-gold {
+    background: rgba(255, 170, 0, 0.15);
+    color: #ffd000;
+    box-shadow: 0 0 10px rgba(255, 170, 0, 0.1);
+}
+
+.badge-stones {
+    background: rgba(195, 0, 255, 0.15);
+    color: #e49cff;
+    box-shadow: 0 0 10px rgba(195, 0, 255, 0.1);
+}
+
+/* 守護靈精美卡牌 */
+.guardian-card {
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.guardian-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    z-index: 2;
+}
+
+.guardian-card.element-Fire::before { background: var(--element-fire); }
+.guardian-card.element-Water::before { background: var(--element-water); }
+.guardian-card.element-Wind::before { background: var(--element-wind); }
+.guardian-card.element-Earth::before { background: var(--element-earth); }
+.guardian-card.element-Light::before { background: var(--element-light); }
+.guardian-card.element-Shadow::before { background: var(--element-shadow); }
+
+.guardian-card.element-Fire { box-shadow: 0 4px 20px rgba(255, 65, 108, 0.15); }
+.guardian-card.element-Water { box-shadow: 0 4px 20px rgba(0, 114, 255, 0.15); }
+.guardian-card.element-Wind { box-shadow: 0 4px 20px rgba(56, 239, 125, 0.15); }
+.guardian-card.element-Earth { box-shadow: 0 4px 20px rgba(179, 135, 40, 0.15); }
+.guardian-card.element-Light { box-shadow: 0 4px 20px rgba(255, 226, 89, 0.2); }
+.guardian-card.element-Shadow { box-shadow: 0 4px 20px rgba(78, 84, 200, 0.2); }
+
+.element-pill {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.element-pill.Fire { background: var(--element-fire); color: #fff; }
+.element-pill.Water { background: var(--element-water); color: #fff; }
+.element-pill.Wind { background: var(--element-wind); color: #000; }
+.element-pill.Earth { background: var(--element-earth); color: #fff; }
+.element-pill.Light { background: var(--element-light); color: #000; }
+.element-pill.Shadow { background: var(--element-shadow); color: #fff; }
+
+/* 守護靈虛擬模型立繪容器 */
+.spirit-avatar-container {
+    height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.spirit-illustration {
+    font-size: 4.5rem;
+    animation: floatSpirit 4s ease-in-out infinite;
+    filter: drop-shadow(0 0 15px currentColor);
+}
+
+.spirit-illustration.Fire { color: #ff6e7f; }
+.spirit-illustration.Water { color: #00c6ff; }
+.spirit-illustration.Wind { color: #72ef9b; }
+.spirit-illustration.Earth { color: #e5b95f; }
+.spirit-illustration.Light { color: #ffe259; }
+.spirit-illustration.Shadow { color: #bf7fff; }
+
+@keyframes floatSpirit {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(3deg); }
+}
+
+/* 裝備插槽 */
+.equip-slots-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+}
+
+.equip-slot {
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.equip-slot:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.equip-slot .slot-icon {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.equip-slot .slot-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+/* 已裝備狀態 */
+.equip-slot.filled {
+    border-style: solid;
+    cursor: pointer;
+}
+
+.equip-slot.filled.rarity-Common { border-color: var(--rarity-common); box-shadow: var(--glow-common); }
+.equip-slot.filled.rarity-Rare { border-color: var(--rarity-rare); box-shadow: var(--glow-rare); }
+.equip-slot.filled.rarity-Epic { border-color: var(--rarity-epic); box-shadow: var(--glow-epic); }
+.equip-slot.filled.rarity-Legendary { border-color: var(--rarity-legendary); box-shadow: var(--glow-legendary); }
+
+.equip-slot.filled .slot-icon {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.5));
+}
+
+.equip-slot .level-badge {
+    position: absolute;
+    bottom: -3px;
+    right: -3px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.55rem;
+    padding: 0px 4px;
+    font-weight: bold;
+}
+
+/* EXP 經驗條 */
+.exp-progress-container {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.exp-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #b3ff00, #38ef7d);
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+}
+
+/* 戰力展示 */
+.power-display {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffb800;
+    text-shadow: 0 0 10px rgba(255, 184, 0, 0.3);
+}
+
+/* 裝備卡牌庫 */
+.equipment-card {
+    border-left: 5px solid transparent;
+}
+
+.equipment-card.rarity-Common { border-left-color: var(--rarity-common); }
+.equipment-card.rarity-Rare { border-left-color: var(--rarity-rare); box-shadow: 0 0 15px rgba(0, 153, 255, 0.05); }
+.equipment-card.rarity-Epic { border-left-color: var(--rarity-epic); box-shadow: 0 0 15px rgba(195, 0, 255, 0.07); }
+.equipment-card.rarity-Legendary { border-left-color: var(--rarity-legendary); box-shadow: 0 0 15px rgba(255, 170, 0, 0.1); }
+
+.badge-rarity {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.badge-rarity.Common { background: rgba(142, 146, 151, 0.2); color: var(--rarity-common); }
+.badge-rarity.Rare { background: rgba(0, 153, 255, 0.2); color: #9cd6ff; }
+.badge-rarity.Epic { background: rgba(195, 0, 255, 0.2); color: #f2c7ff; }
+.badge-rarity.Legendary { background: rgba(255, 170, 0, 0.2); color: #ffeabf; }
+
+/* 召喚祭壇 */
+.summon-platform {
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    perspective: 1000px;
+}
+
+.magic-circle-container {
+    width: 280px;
+    height: 280px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.magic-circle-outer {
+    width: 100%;
+    height: 100%;
+    border: 4px double rgba(255, 170, 0, 0.4);
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.15), inset 0 0 30px rgba(255, 170, 0, 0.15);
+    animation: spinCircleClockwise 20s linear infinite;
+}
+
+.magic-circle-inner {
+    width: 80%;
+    height: 80%;
+    border: 2px dashed rgba(255, 170, 0, 0.3);
+    border-radius: 50%;
+    position: absolute;
+    animation: spinCircleCounterClockwise 12s linear infinite;
+}
+
+.magic-star {
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-bottom: 140px solid rgba(255, 170, 0, 0.08);
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+}
+
+.magic-star-reverse {
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-bottom: 140px solid rgba(255, 170, 0, 0.08);
+    position: absolute;
+    transform: translate(-50%, -50%) rotate(180deg);
+    top: 50%;
+    left: 50%;
+}
+
+.summon-altar-core {
+    font-size: 5rem;
+    color: #ffb800;
+    z-index: 10;
+    filter: drop-shadow(0 0 20px rgba(255, 184, 0, 0.8));
+    animation: corePulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes spinCircleClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes spinCircleCounterClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes corePulse {
+    from { transform: scale(1); filter: drop-shadow(0 0 20px rgba(255, 184, 0, 0.6)); }
+    to { transform: scale(1.1); filter: drop-shadow(0 0 35px rgba(255, 184, 0, 1)); }
+}
+
+/* 召喚激活動畫 */
+.magic-circle-container.active .magic-circle-outer {
+    border-color: #ff3c00;
+    box-shadow: 0 0 60px rgba(255, 60, 0, 0.8), inset 0 0 60px rgba(255, 60, 0, 0.8);
+    animation: spinCircleClockwise 2s linear infinite;
+}
+
+.magic-circle-container.active .magic-circle-inner {
+    border-color: #ffaa00;
+    animation: spinCircleCounterClockwise 1.2s linear infinite;
+}
+
+.magic-circle-container.active .summon-altar-core {
+    color: #ff3c00;
+    filter: drop-shadow(0 0 50px #ff3c00);
+}
+
+/* 3D 卡牌翻牌效果 */
+.draw-reveal-area {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+    width: 100%;
+}
+
+.gacha-card-wrapper {
+    perspective: 1000px;
+    width: 180px;
+    height: 270px;
+}
+
+.gacha-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.gacha-card-inner.flipped {
+    transform: rotateY(180deg);
+}
+
+.gacha-card-front, .gacha-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.gacha-card-back {
+    background: radial-gradient(circle, #1a2236 0%, #0d1220 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.gacha-card-back::after {
+    content: '🔱';
+    font-size: 3rem;
+    color: rgba(255, 170, 0, 0.15);
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.3);
+}
+
+.gacha-card-front {
+    background: #121622;
+    transform: rotateY(180deg);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+
+.gacha-card-front.rarity-Legendary { border-color: var(--rarity-legendary); box-shadow: 0 0 25px rgba(255, 170, 0, 0.25); }
+.gacha-card-front.rarity-Epic { border-color: var(--rarity-epic); box-shadow: 0 0 25px rgba(195, 0, 255, 0.25); }
+.gacha-card-front.rarity-Rare { border-color: var(--rarity-rare); box-shadow: 0 0 20px rgba(0, 153, 255, 0.2); }
+.gacha-card-front.rarity-Common { border-color: var(--rarity-common); }
+
+/* 微動畫與特效 */
+.btn-primary-glow {
+    background: linear-gradient(135deg, #ffe259 0%, #ffa751 100%);
+    border: none;
+    color: #3b2000;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(255, 167, 81, 0.4);
+    transition: all 0.25s ease;
+}
+
+.btn-primary-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 167, 81, 0.6);
+    background: linear-gradient(135deg, #fff07c 0%, #ffb462 100%);
+    color: #3b2000;
+}
+
+.btn-secondary-glass {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+    transition: all 0.25s ease;
+}
+
+.btn-secondary-glass:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-danger-glass {
+    background: rgba(255, 75, 43, 0.15);
+    border: 1px solid rgba(255, 75, 43, 0.3);
+    color: #ff6e6e;
+    transition: all 0.25s ease;
+}
+
+.btn-danger-glass:hover {
+    background: rgba(255, 75, 43, 0.3);
+    border-color: #ff4b2b;
+    color: #fff;
+}
+
+/* 升級與發光特效 */
+.level-up-flash {
+    animation: levelUpFlashAnim 1s ease-out;
+}
+
+@keyframes levelUpFlashAnim {
+    0% { transform: scale(1); filter: brightness(1); }
+    30% { transform: scale(1.05); filter: brightness(2) drop-shadow(0 0 40px rgba(255, 255, 255, 1)); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* 前端通知吐司 (Toasts) / 提示面板 */
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 450px;
+    background: rgba(13, 17, 26, 0.85);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    border-radius: 12px;
+    padding: 16px;
+    display: none;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-alert.show {
+    display: block;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.custom-alert.success { border-left: 5px solid #28a745; }
+.custom-alert.error { border-left: 5px solid #dc3545; }
+.custom-alert.info { border-left: 5px solid var(--rarity-rare); }
+
+/* 金色粒子 */
+.particle {
+    position: absolute;
+    pointer-events: none;
+    width: 6px;
+    height: 6px;
+    background: #ffcc00;
+    border-radius: 50%;
+    z-index: 100;
+    box-shadow: 0 0 10px #ffcc00;
+}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}控制面板 - 守護靈裝備系統{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- 總體統計卡片列 -->
+    <div class="col-md-4">
+        <div class="glass-panel p-4 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-secondary d-block mb-1">陣容總戰力</span>
+                <h2 class="power-display mb-0" id="stat-total-power">{{ total_power }}</h2>
+            </div>
+            <div class="fs-1 text-warning"><i class="bi bi-lightning-charge-fill"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-panel p-4 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-secondary d-block mb-1">守護靈數量</span>
+                <h2 class="mb-0 text-white fw-extrabold" id="stat-guardian-count">{{ guardian_count }}</h2>
+            </div>
+            <div class="fs-1 text-info"><i class="bi bi-shield-shaded"></i></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="glass-panel p-4 d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-secondary d-block mb-1">裝備保存量</span>
+                <h2 class="mb-0 text-white fw-extrabold" id="stat-equipment-count">{{ equipment_count }}</h2>
+            </div>
+            <div class="fs-1 text-purple" style="color: #d17cff;"><i class="bi bi-gem"></i></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 左側：強大守護靈殿堂簡介 -->
+    <div class="col-xl-8">
+        <div class="glass-panel p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0 text-white fw-bold"><i class="bi bi-stars text-warning me-2"></i>最強大守護靈</h4>
+                <a href="{{ url_for('main.guardian_hall') }}" class="btn btn-sm btn-secondary-glass">
+                    進入殿堂 <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            
+            {% if guardians %}
+            <div class="row g-4">
+                {% for g in guardians %}
+                <div class="col-md-4">
+                    <div class="glass-panel p-3 guardian-card element-{{ g.element }} h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge element-pill {{ g.element }}">{{ g.element }}</span>
+                                <span class="text-warning fw-bold small"><i class="bi bi-shield-fill"></i> Lv.{{ g.level }}</span>
+                            </div>
+                            <h5 class="text-white fw-bold mb-3">{{ g.name }}</h5>
+                            
+                            <div class="spirit-avatar-container my-2">
+                                {% if g.element == 'Fire' %}
+                                <span class="spirit-illustration Fire">🔥</span>
+                                {% elif g.element == 'Water' %}
+                                <span class="spirit-illustration Water">💧</span>
+                                {% elif g.element == 'Wind' %}
+                                <span class="spirit-illustration Wind">🌪️</span>
+                                {% elif g.element == 'Earth' %}
+                                <span class="spirit-illustration Earth">🛡️</span>
+                                {% elif g.element == 'Light' %}
+                                <span class="spirit-illustration Light">☀️</span>
+                                {% elif g.element == 'Shadow' %}
+                                <span class="spirit-illustration Shadow">😈</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-auto">
+                            <!-- 簡易數值 -->
+                            <div class="row g-1 text-center small text-secondary bg-dark-opacity py-2 rounded mb-2">
+                                <div class="col-4">生命<br><strong class="text-white">{{ g.total_hp }}</strong></div>
+                                <div class="col-4">攻擊<br><strong class="text-white">{{ g.total_atk }}</strong></div>
+                                <div class="col-4">防禦<br><strong class="text-white">{{ g.total_def }}</strong></div>
+                            </div>
+                            <!-- 戰力 -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-secondary">戰力值</span>
+                                <span class="text-warning fw-bold">{{ g.power }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="text-secondary mb-3">你目前尚未契約任何守護靈！點擊下方召喚祭壇進行契約。</p>
+                <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+                    <i class="bi bi-stars me-1"></i> 前往召喚
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- 右側：冒險者金庫捷徑與說明 -->
+    <div class="col-xl-4">
+        <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
+            <div>
+                <h4 class="text-white fw-bold mb-3"><i class="bi bi-info-circle text-info me-2"></i>系統說明</h4>
+                <p class="text-secondary small leading-relaxed mb-4">
+                    歡迎來到<strong>冒險者金庫之「守護靈裝備系統」</strong>！在這裡你可以與來自虛空深處的守護靈簽訂契約，並為它們配戴強力的冒險裝備。
+                </p>
+                <div class="list-group list-group-flush bg-transparent border-0 mb-4">
+                    <div class="list-group-item bg-transparent text-secondary border-0 px-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> <span>在「守護靈殿堂」餵食升級，提升基礎屬性。</span>
+                    </div>
+                    <div class="list-group-item bg-transparent text-secondary border-0 px-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> <span>給守護靈穿上神兵利器，大幅提高戰力。</span>
+                    </div>
+                    <div class="list-group-item bg-transparent text-secondary border-0 px-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> <span>在「裝備寶庫」中進行金幣強化，使屬性激增。</span>
+                    </div>
+                    <div class="list-group-item bg-transparent text-secondary border-0 px-0 d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> <span>消耗靈石啟動「召喚祭壇」，抽取傳說裝備與守護靈。</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow py-3">
+                    <i class="bi bi-magic me-1"></i> 前往召喚祭壇
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
