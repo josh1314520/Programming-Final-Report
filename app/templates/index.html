@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>冒險者金庫 - 史詩主線任務系統</title>
+    <!-- 引入 Font Awesome 向量圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!-- 引入自訂高質感樣式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- 全螢幕粒子效果 Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="container">
+        
+        <!-- Header -->
+        <header>
+            <div class="logo">
+                <h1>Adventurer's Vault</h1>
+                <span>主線任務系統 • 冒險公會發布</span>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">
+                <i class="fa fa-shield" style="color: var(--gold);"></i> 冒險公會安全結界保護中
+            </div>
+        </header>
+
+        <!-- ==========================================
+             1. 冒險者狀態看板 (Status Dashboard)
+             ========================================== -->
+        <div class="adventurer-dashboard" id="adventurer-panel">
+            <div class="adventurer-info">
+                <div class="avatar-wrapper">
+                    <i class="fa fa-user-secret" style="color: var(--gold);"></i>
+                </div>
+                <div class="adventurer-details">
+                    <h3>Hero</h3>
+                    <span class="title-tag" id="title-tag">見習冒險者</span>
+                </div>
+            </div>
+
+            <!-- 經驗值條 -->
+            <div class="adventurer-stats">
+                <div class="stat-header">
+                    <span class="level-num" id="lv-number">Lv.1</span>
+                    <span id="exp-text" style="color: var(--text-muted);">EXP: 0 / 100 (0%)</span>
+                </div>
+                <div class="exp-bar-container">
+                    <div class="exp-bar-fill" id="exp-fill"></div>
+                </div>
+            </div>
+
+            <!-- 虛擬錢包 -->
+            <div class="adventurer-wallet">
+                <i class="fa fa-database gold-icon"></i>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;">金庫財寶餘額</span>
+                    <span class="gold-amount" id="wallet-gold">500</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             2. 進行中與可接取任務區 (Active Quests)
+             ========================================== -->
+        <h2 class="section-title"><i class="fa fa-compass" style="color: var(--gold);"></i> 進行中與可接取主線</h2>
+        <div class="quest-grid" id="active-quests-grid">
+            <!-- 由 JS 動態渲染任務卡片 -->
+        </div>
+
+        <!-- ==========================================
+             3. 鎖定中的後續任務鏈區 (Locked Quests)
+             ========================================== -->
+        <h2 class="section-title"><i class="fa fa-lock" style="color: var(--text-muted);"></i> 未解鎖之史詩任務鏈</h2>
+        <div class="quest-grid" id="locked-quests-grid">
+            <!-- 由 JS 動態渲染鎖定的任務卡片 -->
+        </div>
+
+        <!-- ==========================================
+             4. 任務建立器/管理控制台 (Quest Builder)
+             ========================================== -->
+        <div class="admin-panel">
+            <div class="admin-header">
+                <h3 class="admin-title"><i class="fa fa-cog" style="color: var(--gold);"></i> 冒險公會任務發布所 (主線任務編輯器)</h3>
+                <p class="admin-desc">您可以自由增加新的劇情主線（系統會自動將其前置任務鎖定在『保單分析任務』之後，完成保單分析後即會自動解除鎖定解鎖！）</p>
+            </div>
+            
+            <form id="custom-quest-form">
+                <div class="admin-row">
+                    <div>
+                        <div class="form-group">
+                            <label for="custom-title">任務標題</label>
+                            <input type="text" id="custom-title" class="form-control" placeholder="例如: 探索黃金山脈" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-desc">任務描述 (一句話概括目的)</label>
+                            <input type="text" id="custom-desc" class="form-control" placeholder="例如: 完成您的第一筆黃金理財定期投資，擴大金庫儲蓄防禦。" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="custom-story">劇情背景故事 (渲染在提交頁面的引導語)</label>
+                            <textarea id="custom-story" class="form-control" rows="3" placeholder="例如: 冒險者，黃金山脈的矮人族開創了全新的理財定期契約，簽下此契約將使您的金幣免受通貨膨脹的詛咒..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="admin-row" style="margin-bottom: 0px; gap: 15px;">
+                            <div class="form-group">
+                                <label for="custom-reward-gold">獎勵金幣數量 (GOLD)</label>
+                                <input type="number" id="custom-reward-gold" class="form-control" value="200" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="custom-reward-exp">獎勵經驗值數量 (EXP)</label>
+                                <input type="number" id="custom-reward-exp" class="form-control" value="250" min="0" required>
+                            </div>
+                        </div>
+
+                        <!-- 動態子目標添加區 -->
+                        <div class="form-group">
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>子目標清單 (必填項目)</span>
+                                <button type="button" class="btn btn-secondary" id="add-objective-btn" style="padding: 4px 10px; font-size: 0.75rem; width: auto;">
+                                    <i class="fa fa-plus"></i> 新增子目標
+                                </button>
+                            </label>
+                            <div id="custom-objectives-container">
+                                <div class="objective-input-row">
+                                    <input type="text" class="form-control obj-desc" placeholder="目標描述 (例: 完成第二次投資保險)" required>
+                                    <input type="text" class="form-control obj-id" placeholder="程式識別代碼 (例: invest_task)" required pattern="^[a-zA-Z0-9_]+$">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="margin-top: 15px; width: auto; float: right;">
+                            <i class="fa fa-magic"></i> 注入魔力並發布任務
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- ==========================================
+         5. 劇情表單彈出視窗 (Quest Submission Modal)
+         ========================================== -->
+    <div class="modal-overlay" id="quest-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">主線任務契約表單</h3>
+                <button type="button" class="modal-close-btn" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- 錯誤警告提示框 -->
+                <div class="alert-error" id="modal-error-alert">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <span>請檢查輸入格式！</span>
+                </div>
+
+                <!-- 動態注入的表單 -->
+                <form id="quest-submit-form">
+                    <div id="modal-form-container">
+                        <!-- 由 JS 動態注入表單元素 -->
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         6. 全螢幕史詩級升級動畫遮罩 (Level Up Overlay)
+         ========================================== -->
+    <div class="levelup-overlay" id="levelup-overlay">
+        <div class="levelup-box">
+            <div class="levelup-title">LEVEL UP!</div>
+            <div class="levelup-subtitle">— 您的冒險境界已然突破 —</div>
+            
+            <div class="levelup-stats-list">
+                <div class="levelup-stat-card">
+                    <div class="levelup-stat-label">原先境界</div>
+                    <div class="levelup-stat-val" id="levelup-old-lv" style="color: var(--text-muted);">Lv.1</div>
+                </div>
+                <div class="levelup-stat-card" style="border-color: var(--gold);">
+                    <div class="levelup-stat-label" style="color: var(--gold);">突破境界</div>
+                    <div class="levelup-stat-val" id="levelup-new-lv" style="color: var(--gold-glow);">Lv.2</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 40px;">
+                <span style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px;">獲頒最新公會稱號</span>
+                <h2 id="levelup-new-title" style="font-size: 2.2rem; color: #fff; margin-top: 10px; font-weight: 900; text-shadow: 0 0 20px rgba(212,175,55,0.4);">正式冒險者</h2>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="levelup-close-btn" style="width: auto; padding: 15px 40px; font-size: 1.1rem; margin: 0 auto;">
+                <i class="fa fa-unlock"></i> 承受神聖洗禮並返回金庫
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast 提示組件 -->
+    <div class="toast" id="toast">任務接取成功！</div>
+
+    <!-- 載入核心 JS 邏輯 -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
