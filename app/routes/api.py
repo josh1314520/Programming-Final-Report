@@ -1,9 +1,13 @@
 import re
+import threading
 from flask import Blueprint, jsonify, request
 from app.models.adventurer import Adventurer
 from app.models.quest import Quest
 
 api_bp = Blueprint('api', __name__, url_prefix='/api')
+
+# 全域執行緒鎖，用以防止併發重複提交請求（Race Condition）
+submit_lock = threading.Lock()
 
 @api_bp.route('/adventurer', methods=['GET'])
 def get_adventurer():
@@ -45,13 +49,36 @@ def accept_quest(quest_id):
 @api_bp.route('/quests/<int:quest_id>/submit', methods=['POST'])
 def submit_quest(quest_id):
     """
-    提交劇情式任務表單。
-    進行嚴格的後端資料驗證，驗證成功後寫入 SQLite、更新任務狀態為 completed、派發金幣與經驗值獎勵，並回傳升級狀態。
+    提交劇情式任務表單（執行緒安全包裝）。
+    """
+    with submit_lock:
+        return _submit_quest_locked(quest_id)
+
+def _submit_quest_locked(quest_id):
+    """
+    實際執行劇情式任務表單提交邏輯。
     """
     try:
         data = request.get_json() or {}
         
-        # 1. 根據任務 ID 進行個別的劇情欄位驗證
+        # [防刷機制] 1. 先從資料庫檢查該任務狀態是否已完成或非進行中，避免惡意重複發送 POST 請求領取獎勵
+        quest = Quest.get_by_id(quest_id, 1)
+        if not quest:
+            return jsonify({"success": False, "error": "此任務不存在"}), 404
+            
+        if quest['status'] == 'completed':
+            return jsonify({
+                "success": False, 
+                "error": "此主線任務已完成，請勿重複提交以刷取金幣與經驗值！"
+            }), 400
+            
+        if quest['status'] != 'active':
+            return jsonify({
+                "success": False, 
+                "error": f"任務必須是進行中狀態才能提交！目前狀態為：{quest['status']}"
+            }), 400
+            
+        # 2. 根據任務 ID 進行個別的劇情欄位驗證
         if quest_id == 1:
             # ----------------------------------------------------
             # 開戶任務 (契約之印) 欄位驗證
