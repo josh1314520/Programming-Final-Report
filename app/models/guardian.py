@@ -57,10 +57,27 @@ class GuardianModel:
                 
         guardian['equipment'] = equipment
         
+        # 查詢保險護甲加成
+        insurance_row = db.execute("SELECT * FROM insurance_armor WHERE guardian_id = ?", (guardian_id,)).fetchone()
+        ins_def = 0
+        if insurance_row:
+            ins = dict(insurance_row)
+            ins_def = ins.get('defense_value', 0)
+            guardian['insurance_armor'] = ins
+        else:
+            guardian['insurance_armor'] = {
+                "life_coverage": 0,
+                "medical_coverage": 0,
+                "accident_coverage": 0,
+                "armor_level": 0,
+                "defense_value": 0,
+                "armor_name": "無護具"
+            }
+        
         # 計算總屬性
         guardian['total_hp'] = guardian['base_hp'] + bonus_hp
         guardian['total_atk'] = guardian['base_atk'] + bonus_atk
-        guardian['total_def'] = guardian['base_def'] + bonus_def
+        guardian['total_def'] = guardian['base_def'] + bonus_def + ins_def
         
         # 計算總戰力 (Power)
         guardian['power'] = int(

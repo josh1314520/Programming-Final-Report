@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}保險護甲系統 - 冒險者金庫{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h2 class="text-white fw-extrabold mb-1"><i class="bi bi-shield-lock text-info me-2"></i>保險護甲系統</h2>
+        <p class="text-secondary mb-0">將您的「保單額度」（壽險、醫療險、意外險）轉化為守護靈的神聖護盾。保險防護網越完善，守護靈防禦力越強大！</p>
+    </div>
+</div>
+
+<div class="row g-4" id="insurance-hall-container">
+    {% if guardians %}
+        {% for g in guardians %}
+        <div class="col-xl-4 col-md-6" id="insurance-wrapper-{{ g.id }}">
+            <div class="glass-panel p-4 insurance-card-wrapper h-100 d-flex flex-column justify-content-between">
+                
+                <!-- 卡牌頂部 -->
+                <div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge element-pill {{ g.element }}">{{ g.element }}</span>
+                        <span class="text-info fw-bold small"><i class="bi bi-shield-fill-check"></i> Lv.{{ g.level }}</span>
+                    </div>
+                    
+                    <h3 class="text-white fw-bold mb-1">{{ g.name }}</h3>
+                    <span class="text-secondary small d-block mb-3">當前穿戴：
+                        <span class="badge badge-rarity {% if g.insurance_armor.armor_level >= 16 %}Mythic{% elif g.insurance_armor.armor_level >= 11 %}Legendary{% elif g.insurance_armor.armor_level >= 6 %}Epic{% elif g.insurance_armor.armor_level >= 3 %}Rare{% else %}Common{% endif %}" id="armor-title-{{ g.id }}">
+                            {{ g.insurance_armor.armor_name }}
+                        </span>
+                    </span>
+                    
+                    <!-- 3D 浮空發光保險神盾 -->
+                    <div class="spirit-avatar-container my-3">
+                        <div class="shield-glowing-glow" id="shield-icon-{{ g.id }}">
+                            {% if g.insurance_armor.armor_level >= 16 %}
+                            <span style="font-size: 5rem; color: #00f0ff; filter: drop-shadow(0 0 20px #00f0ff);" class="d-block">💎</span>
+                            {% elif g.insurance_armor.armor_level >= 11 %}
+                            <span style="font-size: 5rem; color: #ffaa00; filter: drop-shadow(0 0 20px #ffaa00);" class="d-block">👑</span>
+                            {% elif g.insurance_armor.armor_level >= 6 %}
+                            <span style="font-size: 5rem; color: #c300ff; filter: drop-shadow(0 0 15px #c300ff);" class="d-block">🛡️</span>
+                            {% elif g.insurance_armor.armor_level >= 3 %}
+                            <span style="font-size: 5rem; color: #0099ff; filter: drop-shadow(0 0 10px #0099ff);" class="d-block">⛓️</span>
+                            {% else %}
+                            <span style="font-size: 5rem; color: #8e9297;" class="d-block">🪵</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- 保單數值 -->
+                    <div class="bg-black-opacity p-3 rounded mb-3 small">
+                        <h6 class="text-info small fw-bold mb-2 border-bottom border-secondary-subtle pb-1">已分析保單保額</h6>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary">壽險保額</span>
+                            <span class="text-white" id="stat-life-{{ g.id }}">{{ g.insurance_armor.life_coverage }} 萬元</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-secondary">醫療險日額</span>
+                            <span class="text-white" id="stat-medical-{{ g.id }}">{{ g.insurance_armor.medical_coverage }} 元</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-secondary">意外險保額</span>
+                            <span class="text-white" id="stat-accident-{{ g.id }}">{{ g.insurance_armor.accident_coverage }} 萬元</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 防禦數值面板 -->
+                <div class="mt-auto">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary small">護甲等級</span>
+                        <strong class="text-white small">Rank <span id="stat-armor-level-{{ g.id }}">{{ g.insurance_armor.armor_level }}</span></strong>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-secondary fw-semibold">護甲防禦力加成</span>
+                        <span class="fs-4 text-info fw-bold" id="stat-def-val-{{ g.id }}">+{{ g.insurance_armor.defense_value }}</span>
+                    </div>
+                    
+                    <!-- 神盾防禦力進度條 -->
+                    <div class="shield-charging-container mb-3">
+                        {% set def_pct = (g.insurance_armor.defense_value / 500) * 100 %}
+                        {% if def_pct > 100 %}{% set def_pct = 100 %}{% endif %}
+                        <div class="shield-charging-bar" id="shield-bar-{{ g.id }}" style="width: {{ def_pct }}%;"></div>
+                    </div>
+                    
+                    <button class="btn btn-primary-glow w-100 py-2.5" 
+                            onclick="openInsuranceModal('{{ g.id }}', '{{ g.name }}', {{ g.insurance_armor.life_coverage }}, {{ g.insurance_armor.medical_coverage }}, {{ g.insurance_armor.accident_coverage }})">
+                        <i class="bi bi-shield-plus me-1"></i> 保單分析與加持護甲
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12 text-center py-5">
+            <div class="glass-panel p-5 d-inline-block max-w-md">
+                <span class="fs-1 text-secondary mb-3 d-block">🛡️</span>
+                <h4 class="text-white fw-bold mb-3">殿堂空無一人...</h4>
+                <p class="text-secondary mb-4">目前沒有任何守護靈可供套用保單分析。請先進行契約召喚！</p>
+                <a href="{{ url_for('main.summon_altar') }}" class="btn btn-primary-glow px-4 py-2">
+                    <i class="bi bi-stars me-1"></i> 前往召喚
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- ================= 保單分析玻璃彈窗 (Insurance Analyze Modal) ================= -->
+<div class="modal fade" id="insuranceAnalyzeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel text-white border-0 shadow-lg">
+            <div class="modal-header border-bottom border-secondary-subtle py-3">
+                <h5 class="modal-title fw-bold" id="insModalTitle">保單分析儀</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4">
+                <form id="insurance-form" onsubmit="submitInsuranceAnalysis(event)">
+                    <input type="hidden" id="ins-guardian-id">
+                    
+                    <p class="text-secondary small mb-4">輸入您目前擁有的保險保額，系統將召喚星辰防禦，充能至守護靈的護盾中。</p>
+                    
+                    <!-- 壽險輸入 -->
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold d-flex justify-content-between">
+                            <span>壽險保額 (Life Insurance)</span>
+                            <span class="text-info" id="range-life-val">300 萬元</span>
+                        </label>
+                        <input type="range" class="form-range" id="ins-life" min="0" max="2000" step="50" value="300" oninput="updateRangeLabel('life')">
+                        <span class="text-secondary-subtle small block text-end" style="font-size:0.65rem;">壽險每 100 萬加成 +50 防禦</span>
+                    </div>
+                    
+                    <!-- 醫療險輸入 -->
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold d-flex justify-content-between">
+                            <span>醫療險日額 (Medical Insurance)</span>
+                            <span class="text-info" id="range-medical-val">3000 元</span>
+                        </label>
+                        <input type="range" class="form-range" id="ins-medical" min="0" max="10000" step="500" value="3000" oninput="updateRangeLabel('medical')">
+                        <span class="text-secondary-subtle small block text-end" style="font-size:0.65rem;">醫療險每 1,000 元加成 +30 防禦</span>
+                    </div>
+                    
+                    <!-- 意外險輸入 -->
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold d-flex justify-content-between">
+                            <span>意外險保額 (Accident Insurance)</span>
+                            <span class="text-info" id="range-accident-val">200 萬元</span>
+                        </label>
+                        <input type="range" class="form-range" id="ins-accident" min="0" max="2000" step="50" value="200" oninput="updateRangeLabel('accident')">
+                        <span class="text-secondary-subtle small block text-end" style="font-size:0.65rem;">意外險每 100 萬加成 +20 防禦</span>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-top border-secondary-subtle">
+                        <button type="submit" class="btn btn-primary-glow w-100 py-3" id="btn-ins-submit">
+                            <i class="bi bi-shield-check me-1"></i> 啟動魔法陣·保單防禦引導
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 滑桿標籤即時更新
+    function updateRangeLabel(type) {
+        const val = document.getElementById(`ins-${type}`).value;
+        const label = document.getElementById(`range-${type}-val`);
+        
+        if (type === 'medical') {
+            label.innerText = val.toLocaleString() + ' 元';
+        } else {
+            label.innerText = val.toLocaleString() + ' 萬元';
+        }
+    }
+    
+    // 開啟分析視窗
+    function openInsuranceModal(guardianId, guardianName, life, medical, accident) {
+        document.getElementById('ins-guardian-id').value = guardianId;
+        document.getElementById('insModalTitle').innerText = `保單分析儀 - 加持 ${guardianName}`;
+        
+        document.getElementById('ins-life').value = life;
+        document.getElementById('ins-medical').value = medical;
+        document.getElementById('ins-accident').value = accident;
+        
+        updateRangeLabel('life');
+        updateRangeLabel('medical');
+        updateRangeLabel('accident');
+        
+        const modal = new bootstrap.Modal(document.getElementById('insuranceAnalyzeModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

@@ -36,6 +36,19 @@ CREATE TABLE IF NOT EXISTS equipment (
     FOREIGN KEY(guardian_id) REFERENCES guardians(id) ON DELETE SET NULL
 );
 
+-- 4. 保險護甲資料表
+CREATE TABLE IF NOT EXISTS insurance_armor (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guardian_id INTEGER UNIQUE NOT NULL,
+    life_coverage INTEGER DEFAULT 0,      -- 壽險保額 (萬元)
+    medical_coverage INTEGER DEFAULT 0,   -- 醫療險日額 (元)
+    accident_coverage INTEGER DEFAULT 0,  -- 意外險保額 (萬元)
+    armor_level INTEGER DEFAULT 1,         -- 護具等級
+    defense_value INTEGER DEFAULT 0,       -- 防禦力數值
+    armor_name TEXT DEFAULT '木質布衣',     -- 護甲名稱
+    FOREIGN KEY(guardian_id) REFERENCES guardians(id) ON DELETE CASCADE
+);
+
 -- 塞入初始測試種子資料 (如果表是空的)
 -- 玩家
 INSERT OR IGNORE INTO player (id, gold, soul_stones, last_daily) 
@@ -74,3 +87,11 @@ WHERE NOT EXISTS (SELECT 1 FROM equipment WHERE name = '星光項鍊');
 INSERT INTO equipment (name, type, rarity, level, hp_bonus, atk_bonus, def_bonus, guardian_id)
 SELECT '生鏽鐵劍', 'weapon', 'Common', 1, 20, 10, 0, NULL
 WHERE NOT EXISTS (SELECT 1 FROM equipment WHERE name = '生鏽鐵劍');
+
+-- 保險護甲初始種子
+INSERT OR IGNORE INTO insurance_armor (id, guardian_id, life_coverage, medical_coverage, accident_coverage, armor_level, defense_value, armor_name)
+VALUES (1, 1, 300, 3000, 200, 7, 280, '白銀聖盾');
+
+INSERT OR IGNORE INTO insurance_armor (id, guardian_id, life_coverage, medical_coverage, accident_coverage, armor_level, defense_value, armor_name)
+VALUES (2, 2, 0, 1000, 0, 2, 30, '木質布衣');
+

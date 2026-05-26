@@ -64,6 +64,13 @@ def summon_altar():
     player = PlayerModel.get_player()
     return render_template('summon.html', player=player)
 
+@main_bp.route('/insurance')
+def insurance_armor_page():
+    """保險護甲頁面"""
+    player = PlayerModel.get_player()
+    guardians = GuardianModel.get_all()
+    return render_template('insurance.html', player=player, guardians=guardians)
+
 @main_bp.route('/api/player/daily', methods=['POST'])
 def get_daily_supply():
     """領取每日補給 API"""

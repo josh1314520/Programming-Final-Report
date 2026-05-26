@@ -556,3 +556,49 @@ body {
     z-index: 100;
     box-shadow: 0 0 10px #ffcc00;
 }
+
+/* 保險護甲特殊樣式 */
+.insurance-card-wrapper {
+    position: relative;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.shield-charging-container {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 15px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shield-charging-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00f0ff, #0072ff);
+    border-radius: 20px;
+    box-shadow: 0 0 10px #00f0ff;
+    transition: width 1.2s cubic-bezier(0.1, 0.8, 0.2, 1);
+}
+
+.shield-glowing-glow {
+    animation: shieldGlowPulse 2.5s infinite alternate;
+}
+
+@keyframes shieldGlowPulse {
+    0% { filter: drop-shadow(0 0 5px rgba(0, 240, 255, 0.3)); }
+    100% { filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.95)); }
+}
+
+.rarity-Mythic {
+    border-color: #00f0ff !important;
+    box-shadow: 0 0 25px rgba(0, 240, 255, 0.45) !important;
+}
+
+.badge-rarity.Mythic {
+    background: rgba(0, 240, 255, 0.2) !important;
+    color: #e3fdff !important;
+}
+

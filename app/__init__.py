@@ -67,10 +67,12 @@ def create_app():
     from app.routes.guardian import guardian_bp
     from app.routes.equipment import equipment_bp
     from app.routes.summon import summon_bp
+    from app.routes.insurance import insurance_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(guardian_bp, url_prefix='/api/guardians')
     app.register_blueprint(equipment_bp, url_prefix='/api/equipment')
     app.register_blueprint(summon_bp, url_prefix='/api/summon')
+    app.register_blueprint(insurance_bp, url_prefix='/api/insurance')
     
     return app

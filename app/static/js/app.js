@@ -504,3 +504,164 @@ function createParticles(element, count = 20) {
         requestAnimationFrame(animate);
     }
 }
+
+// 保單分析表單提交
+function submitInsuranceAnalysis(event) {
+    event.preventDefault();
+    
+    const guardianId = document.getElementById('ins-guardian-id').value;
+    const life = parseInt(document.getElementById('ins-life').value);
+    const medical = parseInt(document.getElementById('ins-medical').value);
+    const accident = parseInt(document.getElementById('ins-accident').value);
+    
+    const btn = document.getElementById('btn-ins-submit');
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 正在開啟引導魔法陣...`;
+    
+    fetch('/api/insurance/analyze', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            guardian_id: guardianId,
+            life_coverage: life,
+            medical_coverage: medical,
+            accident_coverage: accident
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            return res.json().then(err => { throw new Error(err.message); });
+        }
+        return res.json();
+    })
+    .then(data => {
+        const res = data.data;
+        showToast('保單護盾加持！', `成功為 ${res.guardian_name} 加持「${res.armor_name}」，防禦力增加 ${res.defense_increased} 點！`, 'success');
+        
+        // 關閉 Modal
+        const modalEl = document.getElementById('insuranceAnalyzeModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        
+        // 執行酷炫前端升級動畫回饋
+        playArmorUpgradeEffect(res);
+        
+        // 恢復按鈕
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-shield-check me-1"></i> 啟動魔法陣·保單防禦引導`;
+        
+        // 1.5 秒後更新資源面板
+        setTimeout(refreshPlayerStatus, 1500);
+    })
+    .catch(err => {
+        showToast('分析失敗', err.message, 'error');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-shield-check me-1"></i> 啟動魔法陣·保單防禦引導`;
+    });
+}
+
+// 實作保險護甲升級動態回饋
+function playArmorUpgradeEffect(data) {
+    const gid = data.guardian_id;
+    const wrapper = document.getElementById(`insurance-wrapper-${gid}`);
+    
+    if (!wrapper) return;
+    
+    // 1. 卡牌震動發光
+    wrapper.style.transform = 'scale(1.04)';
+    wrapper.classList.add('level-up-flash');
+    
+    // 2. 金屬粒子爆炸 (多個粒子)
+    createParticles(wrapper, 40);
+    
+    setTimeout(() => {
+        wrapper.style.transform = '';
+        wrapper.classList.remove('level-up-flash');
+    }, 1200);
+    
+    // 3. 滾動數字動效
+    animateNumberTicker(`stat-life-${gid}`, data.life_coverage, ' 萬元');
+    animateNumberTicker(`stat-medical-${gid}`, data.medical_coverage, ' 元');
+    animateNumberTicker(`stat-accident-${gid}`, data.accident_coverage, ' 萬元');
+    animateNumberTicker(`stat-armor-level-${gid}`, data.armor_level, '');
+    animateNumberTicker(`stat-def-val-${gid}`, data.defense_value, '', '+');
+    
+    // 4. 重新計算並充電進度條
+    const bar = document.getElementById(`shield-bar-${gid}`);
+    if (bar) {
+        let pct = (data.defense_value / 500) * 100;
+        if (pct > 100) pct = 100;
+        bar.style.width = '0%'; // 先歸零
+        setTimeout(() => {
+            bar.style.width = `${pct}%`;
+        }, 150);
+    }
+    
+    // 5. 動態切換發光 Shield 圖示
+    const shieldIcon = document.getElementById(`shield-icon-${gid}`);
+    if (shieldIcon) {
+        let emoji = '🪵';
+        let color = '#8e9297';
+        let shadow = '';
+        
+        if (data.armor_level >= 16) { emoji = '💎'; color = '#00f0ff'; shadow = 'drop-shadow(0 0 20px #00f0ff)'; }
+        else if (data.armor_level >= 11) { emoji = '👑'; color = '#ffaa00'; shadow = 'drop-shadow(0 0 20px #ffaa00)'; }
+        else if (data.armor_level >= 6) { emoji = '🛡️'; color = '#c300ff'; shadow = 'drop-shadow(0 0 15px #c300ff)'; }
+        else if (data.armor_level >= 3) { emoji = '⛓️'; color = '#0099ff'; shadow = 'drop-shadow(0 0 10px #0099ff)'; }
+        
+        shieldIcon.innerHTML = `<span style="font-size: 5rem; color: ${color}; filter: ${shadow};" class="d-block">${emoji}</span>`;
+    }
+    
+    // 6. 動態切換護甲稱號 Class 與名稱
+    const title = document.getElementById(`armor-title-${gid}`);
+    if (title) {
+        title.innerText = data.armor_name;
+        // 清理全部 class 再加上對應 class
+        title.className = 'badge badge-rarity';
+        if (data.armor_level >= 16) title.classList.add('Mythic');
+        else if (data.armor_level >= 11) title.classList.add('Legendary');
+        else if (data.armor_level >= 6) title.classList.add('Epic');
+        else if (data.armor_level >= 3) title.classList.add('Rare');
+        else title.classList.add('Common');
+    }
+}
+
+// 數字跳動計時器
+function animateNumberTicker(elementId, targetValue, suffix = '', prefix = '') {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    // 取得舊數字，若非數字則從 0 開始
+    const startVal = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0;
+    const diff = targetValue - startVal;
+    
+    if (diff === 0) {
+        el.innerText = prefix + targetValue.toLocaleString() + suffix;
+        return;
+    }
+    
+    const duration = 1000; // 1秒
+    const startTime = performance.now();
+    
+    function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function (easeOutQuad)
+        const ease = progress * (2 - progress);
+        const currentVal = Math.floor(startVal + diff * ease);
+        
+        el.innerText = prefix + currentVal.toLocaleString() + suffix;
+        
+        if (progress < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            el.innerText = prefix + targetValue.toLocaleString() + suffix;
+        }
+    }
+    
+    requestAnimationFrame(tick);
+}
+

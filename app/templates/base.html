@@ -46,6 +46,11 @@
                             <i class="bi bi-stars me-1"></i> 召喚祭壇
                         </a>
                     </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="nav-link {% if request.path == '/insurance' %}active{% endif %}" href="{{ url_for('main.insurance_armor_page') }}">
+                            <i class="bi bi-shield-lock me-1"></i> 保險護甲
+                        </a>
+                    </li>
                 </ul>
                 
                 <!-- 玩家資源與每日補給按鈕 -->
