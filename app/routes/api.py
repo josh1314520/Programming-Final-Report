@@ -2,6 +2,7 @@ import math
 import random
 import json
 from flask import Blueprint, jsonify, request
+from app.database import get_db_connection
 from app.models.vault import get_vault_status, update_vault_status, reset_vault_status
 from app.models.report import create_report, get_all_reports, get_report_by_id
 
@@ -371,4 +372,245 @@ def api_simulate():
         "hedging_advice": hedging_advice,
         "chart_data": chart_data,
         "updated_vault": updated_vault
+    })
+
+
+@api_bp.route('/simulation/stress-test', methods=['POST'])
+def api_stress_test_portfolio():
+    """
+    API：運行特定學號投資組合的「情境災難壓力測試」演算法。
+    接收參數：
+    - student_id (str): 學生 ID
+    - disaster_type (str): 災難類型 ('2008_crash', 'covid_19', 'tech_bubble', 'great_depression' 等)
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "message": "請提供模擬參數"}), 400
+
+    student_id = data.get('student_id')
+    disaster_type = data.get('disaster_type')
+
+    if not student_id:
+        return jsonify({"success": False, "message": "請提供學號 (student_id)"}), 400
+    if not disaster_type:
+        return jsonify({"success": False, "message": "請提供災難類型 (disaster_type)"}), 400
+
+    # 1. 查詢該用戶持有的所有股票與股數
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM investments WHERE student_id = ?", (student_id,))
+        rows = cursor.fetchall()
+        investments = [dict(r) for r in rows]
+
+        # 2. 防呆機制：若無持股，自動寫入預設部位，以保證測試順利
+        if not investments:
+            cursor.executemany('''
+                INSERT INTO investments (student_id, stock_code, stock_name, stock_type, shares, current_price)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', [
+                (student_id, '2330.TW', '台積電', 'tech', 1000, 800.0),
+                (student_id, '1301.TW', '台塑', 'traditional', 2000, 70.0),
+                (student_id, '1760.TW', '寶齡富錦', 'healthcare', 500, 100.0),
+            ])
+            conn.commit()
+            
+            # 重新查詢
+            cursor.execute("SELECT * FROM investments WHERE student_id = ?", (student_id,))
+            rows = cursor.fetchall()
+            investments = [dict(r) for r in rows]
+
+        # 3. 查詢該用戶的 defense_power (防禦力)
+        cursor.execute("SELECT defense_power FROM guardian WHERE student_id = ?", (student_id,))
+        guardian_row = cursor.fetchone()
+        if guardian_row:
+            defense_power = guardian_row['defense_power']
+        else:
+            # 防呆機制：自動寫入預設防禦力 2500
+            defense_power = 2500
+            cursor.execute('''
+                INSERT INTO guardian (student_id, defense_power)
+                VALUES (?, ?)
+            ''', (student_id, defense_power))
+            conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"Database error in portfolio stress test: {e}")
+        return jsonify({"success": False, "message": f"資料庫異常: {e}"}), 500
+    finally:
+        conn.close()
+
+    # 4. 根據災難情境設定衝擊係數
+    # 支援別名以確保不論傳入代碼或中文名稱皆能完美應對
+    disaster_mapping = {
+        '2008_crash': {
+            'name': '2008年金融海嘯',
+            'multiplier': 1.0,
+            'coeffs': {'tech': 0.5, 'traditional': 0.7, 'healthcare': 0.9}
+        },
+        '2008年金融海嘯': {
+            'name': '2008年金融海嘯',
+            'multiplier': 1.0,
+            'coeffs': {'tech': 0.5, 'traditional': 0.7, 'healthcare': 0.9}
+        },
+        'covid_19': {
+            'name': 'COVID-19 疫情大爆發',
+            'multiplier': 0.6,
+            'coeffs': {'tech': 0.9, 'traditional': 0.6, 'healthcare': 1.3}
+        },
+        'covid-19': {
+            'name': 'COVID-19 疫情大爆發',
+            'multiplier': 0.6,
+            'coeffs': {'tech': 0.9, 'traditional': 0.6, 'healthcare': 1.3}
+        },
+        '2020 年魔力瘟疫疫情大爆發': {
+            'name': 'COVID-19 疫情大爆發',
+            'multiplier': 0.6,
+            'coeffs': {'tech': 0.9, 'traditional': 0.6, 'healthcare': 1.3}
+        },
+        'tech_bubble': {
+            'name': '2000年魔導科技泡沫破裂',
+            'multiplier': 1.2,
+            'coeffs': {'tech': 0.2, 'traditional': 1.05, 'healthcare': 0.95}
+        },
+        '2000 年魔導科技泡沫破裂': {
+            'name': '2000年魔導科技泡沫破裂',
+            'multiplier': 1.2,
+            'coeffs': {'tech': 0.2, 'traditional': 1.05, 'healthcare': 0.95}
+        },
+        'great_depression': {
+            'name': '1929年精靈帝國大蕭條',
+            'multiplier': 2.0,
+            'coeffs': {'tech': 0.2, 'traditional': 0.2, 'healthcare': 0.3}
+        },
+        '1929 年精靈帝國大蕭條': {
+            'name': '1929年精靈帝國大蕭條',
+            'multiplier': 2.0,
+            'coeffs': {'tech': 0.2, 'traditional': 0.2, 'healthcare': 0.3}
+        }
+    }
+
+    disaster_info = disaster_mapping.get(disaster_type)
+    if not disaster_info:
+        # 預設係數
+        disaster_info = {
+            'name': disaster_type,
+            'multiplier': 1.0,
+            'coeffs': {'tech': 0.7, 'traditional': 0.7, 'healthcare': 0.8}
+        }
+
+    disaster_name = disaster_info['name']
+    disaster_mult = disaster_info['multiplier']
+    coeffs = disaster_info['coeffs']
+
+    # 5. 整合防禦力（保險）加成減免損失
+    # 每 1000 點防禦力，減免 5% 的損失率，上限為 50%
+    mitigation_rate = min(0.50, (float(defense_power) / 1000.0) * 0.05)
+
+    total_before = 0.0
+    total_after = 0.0
+    portfolio_detail = []
+
+    for stock in investments:
+        shares = float(stock['shares'])
+        price = float(stock['current_price'])
+        val_before = shares * price
+        
+        stock_type = stock['stock_type']
+        raw_coeff = coeffs.get(stock_type, 0.7)  # 預設縮水 30%
+        
+        # 損失率為 1.0 - raw_coeff
+        loss_rate = 1.0 - raw_coeff
+        if loss_rate > 0:
+            # 減免虧損率
+            mitigated_loss_rate = loss_rate * (1.0 - mitigation_rate)
+            mitigated_coeff = 1.0 - mitigated_loss_rate
+        else:
+            # 獲利部位不受防禦減免影響，保留完整利潤
+            mitigated_coeff = raw_coeff
+
+        val_after = val_before * mitigated_coeff
+        
+        total_before += val_before
+        total_after += val_after
+
+        portfolio_detail.append({
+            "stock_code": stock['stock_code'],
+            "stock_name": stock['stock_name'],
+            "stock_type": stock_type,
+            "shares": shares,
+            "price": price,
+            "val_before": round(val_before, 2),
+            "val_after": round(val_after, 2),
+            "raw_coefficient": round(raw_coeff, 4),
+            "mitigated_coefficient": round(mitigated_coeff, 4)
+        })
+
+    # 6. 計算整體損益與恢復期
+    total_loss_amount = total_before - total_after
+    total_loss_ratio = (total_loss_amount / total_before) * 100.0 if total_before > 0 else 0.0
+
+    # 預估資產恢復期（月）
+    if total_loss_ratio <= 0:
+        recovery_period_months = 0
+    else:
+        # 恢復期公式：虧損比率 * 0.5 * 災難係數
+        recovery_period_months = math.ceil(total_loss_ratio * 0.5 * disaster_mult)
+
+    # 7. 計算板塊比率以進行客製化建議
+    total_tech = sum(item['val_before'] for item in portfolio_detail if item['stock_type'] == 'tech')
+    total_traditional = sum(item['val_before'] for item in portfolio_detail if item['stock_type'] == 'traditional')
+    
+    tech_ratio = (total_tech / total_before) * 100.0 if total_before > 0 else 0.0
+    trad_ratio = (total_traditional / total_before) * 100.0 if total_before > 0 else 0.0
+
+    # 8. 生成避險建議
+    advice_lines = []
+    
+    # 標題與虧損狀態
+    if total_loss_ratio > 40.0:
+        advice_lines.append(f"🚨 **金庫極高危警告**：本次【{disaster_name}】壓力測試下，您的資產遭遇毀滅性崩壞！整體回檔高達 **{total_loss_ratio:.2f}%**，資產淨損達 **{total_loss_amount:,.2f}** 元。防線面臨全面潰縮。")
+    elif total_loss_ratio > 15.0:
+        advice_lines.append(f"⚠️ **金庫風險警告**：在【{disaster_name}】模擬中，您的資產回檔率達 **{total_loss_ratio:.2f}%**，面臨中度財務打擊，資產淨損 **{total_loss_amount:,.2f}** 元。")
+    else:
+        advice_lines.append(f"🛡️ **金庫大師級防衛**：面對史詩級的【{disaster_name}】，您在此次壓力測試中僅回檔 **{total_loss_ratio:.2f}%**（資產淨損 **{total_loss_amount:,.2f}** 元），表現極為優異且安全！")
+
+    # 防禦力分析
+    advice_lines.append(f"⚔️ **公會防護評估**：目前您的守護者防禦力為 **{defense_power}** 點，已成功減免 **{mitigation_rate * 100:.1f}%** 的災難損失率。")
+    if defense_power < 3000:
+        advice_lines.append("⚠️ *偵測到您的醫療與金融防禦力（保險）不足，建議加購保險合約或強化重裝，以提高對突發性系統風險的吸收上限。*")
+    elif defense_power >= 6000:
+        advice_lines.append("✨ *您配備了極為深厚的金融防護重甲，在大盤崩毀時成功為公會抵擋了大量衝擊！*")
+
+    # 部位配置點評
+    if tech_ratio > 50.0:
+        advice_lines.append(f"💥 **板塊集中度警告 (科技股過高)**：您的科技板塊持股比例高達 **{tech_ratio:.1f}%**。科技股具有高貝塔波動，在此次海嘯中是重創核心。防禦過載時可能導致爆發性斷頭，建議適度分散至避險黃金或防禦板塊。")
+    elif trad_ratio > 50.0:
+        advice_lines.append(f"🌾 **板塊集中度警告 (傳統股過高)**：您的傳統板塊持股比例高達 **{trad_ratio:.1f}%**。傳統行業偏向低流動與低彈性，在突發性隔離（如疫情）中會因營業中斷而遭受重創，且預期恢復極慢。建議配置適度魔導科技或戰略物資。")
+    else:
+        advice_lines.append("👑 **資產均衡評定**：您的持股配置非常理想，板塊分布均勻，成功分散了非系統性風險！")
+
+    # 恢復期建議
+    if recovery_period_months >= 24:
+        advice_lines.append(f"⌛ **漫長嚴冬**：您的投資組合遭受重創，預估需要長達 **{recovery_period_months} 個月以上** 才能重回巔峰！急需重建防禦結構。")
+    elif recovery_period_months > 0:
+        advice_lines.append(f"⏳ **復甦時間**：預估在保險護盾護持下，資產約需 **{recovery_period_months} 個月** 即可完全收復失地、重回高點。")
+    else:
+        advice_lines.append("🎉 **逆市增值**：恭喜！您的投資組合在此次情境中完全不受負面衝擊影響，逆勢增值，展現神話級避險操作！")
+
+    hedging_advice = "\n\n".join(advice_lines)
+
+    return jsonify({
+        "success": True,
+        "student_id": student_id,
+        "disaster_type": disaster_type,
+        "defense_power": defense_power,
+        "mitigation_rate": round(mitigation_rate, 4),
+        "total_before": round(total_before, 2),
+        "total_after": round(total_after, 2),
+        "total_loss_amount": round(total_loss_amount, 2),
+        "total_loss_ratio": round(total_loss_ratio, 2),
+        "recovery_period_months": recovery_period_months,
+        "portfolio_detail": portfolio_detail,
+        "advice": hedging_advice
     })

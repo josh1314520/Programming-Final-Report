@@ -54,6 +54,28 @@ def init_db():
         )
     ''')
 
+    # 3. 建立股票投資組合表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS investments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT NOT NULL,
+            stock_code TEXT NOT NULL,
+            stock_name TEXT NOT NULL,
+            stock_type TEXT NOT NULL,
+            shares REAL NOT NULL,
+            current_price REAL NOT NULL
+        )
+    ''')
+
+    # 4. 建立守護防禦力（保險）表
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS guardian (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT UNIQUE NOT NULL,
+            defense_power INTEGER NOT NULL DEFAULT 0
+        )
+    ''')
+
     # 3. 檢查並寫入金庫預設初始資源
     cursor.execute('SELECT COUNT(*) FROM vault_status')
     if cursor.fetchone()[0] == 0:
@@ -145,7 +167,28 @@ def init_db():
             '非常出色的防禦布局！您配置了高達 40% 的實體黃金以抵禦大盤崩盤，且在「強化冷鏈糧倉」的加持下，您的糧食儲備在第 4 個月價格飛漲時為您帶來了豐厚的利潤。這完美抵銷了魔力水晶在疫情初期的跌幅。繼續保持此類平衡防禦配置！',
             json.dumps(chart_data_2)
         ))
-        
+        conn.commit()
+
+    # 7. 檢查並寫入預設股票與股數 (investments)
+    cursor.execute('SELECT COUNT(*) FROM investments')
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany('''
+            INSERT INTO investments (student_id, stock_code, stock_name, stock_type, shares, current_price)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', [
+            ('STU12345', '2330.TW', '台積電', 'tech', 1000, 800.0),
+            ('STU12345', '1301.TW', '台塑', 'traditional', 2000, 70.0),
+            ('STU12345', '1760.TW', '寶齡富錦', 'healthcare', 500, 100.0),
+        ])
+        conn.commit()
+
+    # 8. 檢查並寫入預設防禦力 (guardian)
+    cursor.execute('SELECT COUNT(*) FROM guardian')
+    if cursor.fetchone()[0] == 0:
+        cursor.execute('''
+            INSERT INTO guardian (student_id, defense_power)
+            VALUES (?, ?)
+        ''', ('STU12345', 2500))
         conn.commit()
 
     conn.close()
