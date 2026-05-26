@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}冒險者金庫 — 歷史金融海嘯模擬與壓力測試{% endblock %}</title>
+    <!-- Google Fonts: Cinzel for headers, Outfit for clean UI & numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for RPG Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Background overlay effects for premium dark atmosphere -->
+    <div class="stars-bg"></div>
+    <div class="nebula-overlay-1"></div>
+    <div class="nebula-overlay-2"></div>
+
+    <!-- Navigation Header -->
+    <header class="guild-header">
+        <div class="header-container">
+            <div class="guild-logo">
+                <i class="fa-solid fa-vault gold-glow-text"></i>
+                <span class="logo-title">ADVENTURER'S VAULT</span>
+                <span class="logo-subtitle">冒險者金庫</span>
+            </div>
+            <nav class="guild-nav">
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-compass"></i> 模擬主控台
+                </a>
+                <a href="{{ url_for('main.reports') }}" class="nav-link {% if request.path == '/reports' %}active{% endif %}">
+                    <i class="fa-solid fa-book-history"></i> 歷史編年史
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="guild-footer">
+        <p>© 2026 冒險者公會理事會 (Guild Council of Finance). 版權所有。避險有風險，投資需謹慎。</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
