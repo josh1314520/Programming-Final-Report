@@ -22,6 +22,16 @@ def create_app():
 
 app = create_app()
 
+@app.after_request
+def add_header(response):
+    """
+    強迫瀏覽器每次都跟後端拿熱騰騰的新數據，不准使用暫存，確保股市與任務即時隨機刷新！
+    """
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 def init_db():
     db_path = app.config['DATABASE']
     with sqlite3.connect(db_path) as conn:

@@ -31,6 +31,7 @@ def init_db():
         stage INTEGER DEFAULT 1,
         color TEXT DEFAULT 'Green',
         defense INTEGER DEFAULT 0,
+        insurance_score INTEGER DEFAULT 50,
         FOREIGN KEY (student_id) REFERENCES users (student_id) ON DELETE CASCADE
     );
     """)
@@ -54,6 +55,8 @@ def init_db():
         stock_code TEXT NOT NULL,
         shares_held INTEGER DEFAULT 0,
         average_cost REAL DEFAULT 0.0,
+        stock_value REAL DEFAULT 0.0,
+        cash REAL DEFAULT 10000.0,
         FOREIGN KEY (student_id) REFERENCES users (student_id) ON DELETE CASCADE
     );
     """)
