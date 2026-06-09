@@ -191,7 +191,7 @@ def _submit_quest_locked(quest_id):
             "message": congrats_message,
             "rewards": {
                 "gold": reward_gold,
-                "exp": exp_reward
+                "exp": reward_exp
             },
             "new_stats": {
                 "level": stats['level'],
