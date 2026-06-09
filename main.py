@@ -15,8 +15,8 @@ def create_app():
     # 這樣大家同時開發不同功能時，就不會發生 main.py 的嚴重衝突！
     
     # 1. 守護靈模組 (由 A 同學負責)
-    # from app.routes.guardian import guardian_bp
-    # app.register_blueprint(guardian_bp, url_prefix='/guardian')
+    from app.routes.guardian import guardian_bp
+    app.register_blueprint(guardian_bp, url_prefix='/api/guardian')
 
     # 2. 任務模組 (由 B 同學負責)
     # from app.routes.tasks import tasks_bp

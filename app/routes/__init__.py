@@ -1,1 +1,1 @@
-# empty init
+# Initialize routes package
