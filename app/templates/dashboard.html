@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- 左側：財富森林視覺化 -->
+    <section class="card forest-card">
+        <h2><i class="fas fa-tree"></i> 財富森林</h2>
+        <div class="forest-container" id="forest-container" data-stage="{{ tree_stage }}">
+            <!-- 根據階段顯示不同的 SVG 樹木 -->
+            <div class="tree-display">
+                {% if tree_stage == 1 %}
+                <svg viewBox="0 0 100 100" class="tree tree-stage-1">
+                    <path d="M45,100 L45,70 L55,70 L55,100 Z" fill="#8B4513"/>
+                    <circle cx="50" cy="60" r="20" fill="#2E8B57"/>
+                </svg>
+                <p>幼苗期：剛開始累積財富的勇者。</p>
+                {% elif tree_stage == 2 %}
+                <svg viewBox="0 0 100 100" class="tree tree-stage-2">
+                    <path d="M40,100 L40,60 L60,60 L60,100 Z" fill="#8B4513"/>
+                    <circle cx="50" cy="50" r="30" fill="#2E8B57"/>
+                    <circle cx="35" cy="65" r="20" fill="#228B22"/>
+                    <circle cx="65" cy="65" r="20" fill="#228B22"/>
+                </svg>
+                <p>小樹期：財富穩定成長中。</p>
+                {% elif tree_stage == 3 %}
+                <svg viewBox="0 0 100 100" class="tree tree-stage-3">
+                    <path d="M35,100 L45,50 L55,50 L65,100 Z" fill="#8B4513"/>
+                    <circle cx="50" cy="40" r="35" fill="#006400"/>
+                    <circle cx="25" cy="60" r="25" fill="#2E8B57"/>
+                    <circle cx="75" cy="60" r="25" fill="#2E8B57"/>
+                    <circle cx="50" cy="20" r="20" fill="#228B22"/>
+                </svg>
+                <p>大樹期：枝葉繁茂的財富森林。</p>
+                {% else %}
+                <svg viewBox="0 0 100 100" class="tree tree-stage-4">
+                    <path d="M30,100 L40,40 L60,40 L70,100 Z" fill="#8B4513"/>
+                    <path d="M40,70 L20,50 L45,60 Z" fill="#8B4513"/>
+                    <path d="M60,70 L80,50 L55,60 Z" fill="#8B4513"/>
+                    <circle cx="50" cy="30" r="40" fill="#006400"/>
+                    <circle cx="15" cy="50" r="30" fill="#228B22"/>
+                    <circle cx="85" cy="50" r="30" fill="#228B22"/>
+                    <circle cx="35" cy="20" r="25" fill="#32CD32"/>
+                    <circle cx="65" cy="20" r="25" fill="#32CD32"/>
+                </svg>
+                <p>世界樹：財富自由的終極境界！</p>
+                {% endif %}
+            </div>
+            
+            <div class="forest-stats">
+                <div class="stat-box">
+                    <div class="stat-label">總資產 (戰鬥力)</div>
+                    <div class="stat-value"><i class="fas fa-coins text-warning"></i> {{ "{:,.0f}".format(adventurer.total_assets) }}</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">保障度 (防禦力)</div>
+                    <div class="stat-value"><i class="fas fa-shield-alt text-info"></i> {{ adventurer.security_score }}%</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 右側：評級與進度 -->
+    <section class="card rating-card">
+        <h2><i class="fas fa-medal"></i> 總體英雄狀態</h2>
+        <div class="rating-badge">
+            <div class="badge-icon stage-{{ tree_stage }}">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h3 class="tier-name">{{ rating_info.tier_name }}</h3>
+        </div>
+        
+        <div class="progress-section">
+            <h4>升級進度</h4>
+            {% if rating_info.next_threshold %}
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 0%" data-target="{{ rating_info.progress }}%"></div>
+            </div>
+            <div class="progress-details">
+                <span>當前: {{ "{:,.0f}".format(adventurer.total_assets) }}</span>
+                <span>目標: {{ "{:,.0f}".format(rating_info.next_threshold) }}</span>
+            </div>
+            <p class="next-level-hint">
+                距離下一級還差 <strong>{{ "{:,.0f}".format(rating_info.needed_assets) }}</strong> 金幣 (資產)！
+            </p>
+            {% else %}
+            <div class="progress-bar-container">
+                <div class="progress-bar full" style="width: 100%"></div>
+            </div>
+            <p class="next-level-hint">您已達到最高等級！</p>
+            {% endif %}
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-primary"><i class="fas fa-plus"></i> 新增收入</button>
+            <button class="btn btn-secondary"><i class="fas fa-store"></i> 購買防具 (保險)</button>
+        </div>
+    </section>
+</div>
+{% endblock %}

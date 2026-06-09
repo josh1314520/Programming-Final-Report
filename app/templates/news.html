@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="news-page">
+    <div class="card header-card">
+        <h2><i class="fas fa-newspaper"></i> 每日讀報任務</h2>
+        <p class="text-muted">閱讀即時財經新聞，擴展投資視野，每閱讀一篇即可獲得 <strong>50 點資產加成</strong>！</p>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="news-grid">
+        {% for item in news_items %}
+        <div class="card news-card">
+            <h3 class="news-title">{{ item.title }}</h3>
+            <p class="news-date"><i class="far fa-clock"></i> {{ item.pubDate }}</p>
+            <div class="news-action">
+                {% if item.is_read %}
+                <button class="btn btn-secondary disabled" disabled>
+                    <i class="fas fa-check-circle"></i> 已閱讀 (已領取)
+                </button>
+                <a href="{{ item.link }}" target="_blank" class="btn btn-outline">再次閱讀</a>
+                {% else %}
+                <button class="btn btn-primary read-news-btn" data-url="{{ item.link }}">
+                    <i class="fas fa-book-reader"></i> 閱讀並領取獎勵
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/news.js') }}"></script>
+{% endblock %}
