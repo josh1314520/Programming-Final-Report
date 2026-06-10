@@ -1,62 +1,13 @@
--- 主線任務系統 SQLite 資料庫建表腳本
+DROP TABLE IF EXISTS guardians;
 
--- 啟用外鍵約束
-PRAGMA foreign_keys = ON;
-
--- 1. 冒險者角色表
-CREATE TABLE IF NOT EXISTS adventurers (
+CREATE TABLE guardians (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL UNIQUE,
-    level INTEGER NOT NULL DEFAULT 1,
-    exp INTEGER NOT NULL DEFAULT 0,
-    gold INTEGER NOT NULL DEFAULT 500,
-    title TEXT NOT NULL DEFAULT '見習冒險者',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. 任務定義表
-CREATE TABLE IF NOT EXISTS quests (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL UNIQUE,
-    description TEXT NOT NULL,
-    story_intro TEXT NOT NULL,
-    reward_gold INTEGER NOT NULL DEFAULT 0,
-    reward_exp INTEGER NOT NULL DEFAULT 0,
-    prerequisite_quest_id INTEGER,
-    display_order INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY (prerequisite_quest_id) REFERENCES quests(id) ON DELETE SET NULL
-);
-
--- 3. 任務子目標定義表
-CREATE TABLE IF NOT EXISTS quest_objectives (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    quest_id INTEGER NOT NULL,
-    description TEXT NOT NULL,
-    code_identifier TEXT NOT NULL,
-    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE
-);
-
--- 4. 冒險者任務接取進度表 (多對多)
-CREATE TABLE IF NOT EXISTS adventurer_quests (
-    adventurer_id INTEGER NOT NULL,
-    quest_id INTEGER NOT NULL,
-    status TEXT NOT NULL DEFAULT 'locked', -- locked / available / active / completed
-    accepted_at DATETIME,
-    completed_at DATETIME,
-    PRIMARY KEY (adventurer_id, quest_id),
-    FOREIGN KEY (adventurer_id) REFERENCES adventurers(id) ON DELETE CASCADE,
-    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE
-);
-
--- 5. 任務表單提交歷史表
-CREATE TABLE IF NOT EXISTS quest_submissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    adventurer_id INTEGER NOT NULL,
-    quest_id INTEGER NOT NULL,
-    submitted_data TEXT NOT NULL, -- 儲存 JSON 格式的表單資料
-    submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (adventurer_id) REFERENCES adventurers(id) ON DELETE CASCADE,
-    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE
+    user_id INTEGER UNIQUE NOT NULL,
+    asset_value REAL DEFAULT 0,
+    risk_tolerance TEXT DEFAULT 'balanced', -- conservative, balanced, aggressive
+    stage INTEGER DEFAULT 1,
+    color TEXT DEFAULT 'Green',
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================
