@@ -6,3 +6,8 @@ __pycache__/
 venv/
 ENV/
 env/
+.venv/
+instance/
+__pycache__/
+*.pyc
+.DS_Store

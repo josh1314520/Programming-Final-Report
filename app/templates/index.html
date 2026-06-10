@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}壓力測試控制台 — 冒險者金庫{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    
+    <!-- TOP SECTION: Current Vault Assets -->
+    <section class="vault-status-panel glass-panel">
+        <div class="panel-header">
+            <h2 class="cinzel-header"><i class="fa-solid fa-gem"></i> 當前金庫實體物資狀態 (Active Vault Inventory)</h2>
+            <button id="btn-reset-vault" class="guild-btn secondary-btn" title="將所有實體物資一鍵加滿">
+                <i class="fa-solid fa-arrows-rotate"></i> 重整公會金庫
+            </button>
+        </div>
+        <div class="assets-grid">
+            <div class="asset-card gold-card" id="vault-card-gold">
+                <div class="asset-icon"><i class="fa-solid fa-coins"></i></div>
+                <div class="asset-details">
+                    <span class="asset-label">實體黃金</span>
+                    <span class="asset-val" id="val-gold">{{ vault.gold }}</span>
+                    <span class="asset-unit">金幣</span>
+                </div>
+            </div>
+            <div class="asset-card mana-card" id="vault-card-mana">
+                <div class="asset-icon"><i class="fa-solid fa-wand-sparkles"></i></div>
+                <div class="asset-details">
+                    <span class="asset-label">魔力水晶</span>
+                    <span class="asset-val" id="val-mana">{{ vault.mana_crystals }}</span>
+                    <span class="asset-unit">顆</span>
+                </div>
+            </div>
+            <div class="asset-card bond-card" id="vault-card-bonds">
+                <div class="asset-icon"><i class="fa-solid fa-scroll"></i></div>
+                <div class="asset-details">
+                    <span class="asset-label">皇家公債</span>
+                    <span class="asset-val" id="val-bonds">{{ vault.bonds }}</span>
+                    <span class="asset-unit">張</span>
+                </div>
+            </div>
+            <div class="asset-card egg-card" id="vault-card-eggs">
+                <div class="asset-icon"><i class="fa-solid fa-egg"></i></div>
+                <div class="asset-details">
+                    <span class="asset-label">飛龍魔獸蛋</span>
+                    <span class="asset-val" id="val-eggs">{{ vault.dragon_eggs }}</span>
+                    <span class="asset-unit">顆</span>
+                </div>
+            </div>
+            <div class="asset-card supply-card" id="vault-card-supplies">
+                <div class="asset-icon"><i class="fa-solid fa-wheat-awn"></i></div>
+                <div class="asset-details">
+                    <span class="asset-label">糧草物資</span>
+                    <span class="asset-val" id="val-supplies">{{ vault.supplies }}</span>
+                    <span class="asset-unit">馱</span>
+                </div>
+            </div>
+        </div>
+        <div class="gamified-warning-banner">
+            <i class="fa-solid fa-triangle-exclamation"></i> <strong>真實連動機制</strong>：壓力測試大盤損益將正式套用到當前金庫！防禦不力會導致實體資產縮水，若歸零請使用右上角「重整金庫」。
+        </div>
+    </section>
+
+    <!-- CORE PLAYGROUND: Controls vs terminal -->
+    <div class="playground-layout">
+        
+        <!-- LEFT: Control Panel -->
+        <div class="control-side">
+            
+            <!-- Panel 1: Portfolio Configuration -->
+            <section class="config-panel glass-panel">
+                <h3 class="cinzel-header"><i class="fa-solid fa-sliders"></i> 1. 配置虛擬投資組合比例</h3>
+                
+                <!-- Preset Templates -->
+                <div class="preset-row">
+                    <span class="preset-label">配置範本：</span>
+                    <button type="button" class="preset-btn" data-preset="knight"><i class="fa-solid fa-shield-halved"></i> 重裝騎士型 (防禦)</button>
+                    <button type="button" class="preset-btn" data-preset="paladin"><i class="fa-solid fa-balance-scale"></i> 皇家聖騎士 (平衡)</button>
+                    <button type="button" class="preset-btn" data-preset="mage"><i class="fa-solid fa-fire-burner"></i> 狂暴法師型 (激進)</button>
+                </div>
+
+                <div class="sliders-list">
+                    <!-- Slider: Gold -->
+                    <div class="slider-group group-gold">
+                        <div class="slider-info">
+                            <span class="slider-name"><i class="fa-solid fa-coins"></i> 黃金 (Physical Gold)</span>
+                            <span class="slider-badge" id="badge-gold">20%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="20" class="portfolio-slider" id="slider-gold">
+                    </div>
+                    <!-- Slider: Mana -->
+                    <div class="slider-group group-mana">
+                        <div class="slider-info">
+                            <span class="slider-name"><i class="fa-solid fa-wand-sparkles"></i> 魔力水晶 (Mana Crystals)</span>
+                            <span class="slider-badge" id="badge-mana">20%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="20" class="portfolio-slider" id="slider-mana">
+                    </div>
+                    <!-- Slider: Bonds -->
+                    <div class="slider-group group-bonds">
+                        <div class="slider-info">
+                            <span class="slider-name"><i class="fa-solid fa-scroll"></i> 皇家公債 (Royal Bonds)</span>
+                            <span class="slider-badge" id="badge-bonds">20%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="20" class="portfolio-slider" id="slider-bonds">
+                    </div>
+                    <!-- Slider: Eggs -->
+                    <div class="slider-group group-eggs">
+                        <div class="slider-info">
+                            <span class="slider-name"><i class="fa-solid fa-egg"></i> 飛龍魔獸蛋 (Dragon Eggs)</span>
+                            <span class="slider-badge" id="badge-eggs">20%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="20" class="portfolio-slider" id="slider-eggs">
+                    </div>
+                    <!-- Slider: Supplies -->
+                    <div class="slider-group group-supplies">
+                        <div class="slider-info">
+                            <span class="slider-name"><i class="fa-solid fa-wheat-awn"></i> 糧草物資 (Guild Supplies)</span>
+                            <span class="slider-badge" id="badge-supplies">20%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="20" class="portfolio-slider" id="slider-supplies">
+                    </div>
+                </div>
+
+                <div class="total-bar-container">
+                    <div class="total-bar-header">
+                        <span>目前配置總額：</span>
+                        <span id="portfolio-total-text" class="valid-total">100%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="bar-gold" class="progress-seg seg-gold" style="width: 20%;"></div>
+                        <div id="bar-mana" class="progress-seg seg-mana" style="width: 20%;"></div>
+                        <div id="bar-bonds" class="progress-seg seg-bonds" style="width: 20%;"></div>
+                        <div id="bar-eggs" class="progress-seg seg-eggs" style="width: 20%;"></div>
+                        <div id="bar-supplies" class="progress-seg seg-supplies" style="width: 20%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Panel 2: Scenario Selection -->
+            <section class="scenario-panel glass-panel">
+                <h3 class="cinzel-header"><i class="fa-solid fa-bolt"></i> 2. 挑選歷史金融海嘯情境</h3>
+                <div class="select-container">
+                    <select id="disaster-select" class="guild-select">
+                        <option value="2008 年矮人銀行金融海嘯">2008 年矮人銀行金融海嘯 (Subprime Collapse)</option>
+                        <option value="2020 年魔力瘟疫疫情大爆發" selected>2020 年魔力瘟疫疫情大爆發 (Plague Shock)</option>
+                        <option value="2000 年魔導科技泡沫破裂">2000 年魔導科技泡沫破裂 (Tech Bubble Burst)</option>
+                        <option value="1929 年精靈帝國大蕭條">1929 年精靈帝國大蕭條 (The Great Depression)</option>
+                    </select>
+                </div>
+                <div id="disaster-description-box" class="parchment-desc">
+                    <!-- Dynamic details in JS -->
+                </div>
+            </section>
+
+            <!-- Panel 3: Hedging & Defenses -->
+            <section class="hedging-panel glass-panel">
+                <h3 class="cinzel-header"><i class="fa-solid fa-shield-halved"></i> 3. 加購避險防禦合約 (Hedging Upgrades)</h3>
+                <div class="upgrades-grid">
+                    <label class="upgrade-checkbox-label">
+                        <input type="checkbox" value="guild_insurance" class="upgrade-cb">
+                        <span class="cb-custom"></span>
+                        <span class="cb-info">
+                            <strong class="up-title"><i class="fa-solid fa-file-shield text-blue"></i> 公會存託保險</strong>
+                            <span class="up-desc">大幅降低金融危機時「公債」與「現金」違約虧損。</span>
+                        </span>
+                    </label>
+                    
+                    <label class="upgrade-checkbox-label">
+                        <input type="checkbox" value="cold_chain" class="upgrade-cb" checked>
+                        <span class="cb-custom"></span>
+                        <span class="cb-info">
+                            <strong class="up-title"><i class="fa-solid fa-snowflake text-cyan"></i> 強化冷鏈糧倉</strong>
+                            <span class="up-desc">保障物資免於過期損耗，並能完全套取疫情中物資暴漲利潤。</span>
+                        </span>
+                    </label>
+                    
+                    <label class="upgrade-checkbox-label">
+                        <input type="checkbox" value="shield_overdrive" class="upgrade-cb">
+                        <span class="cb-custom"></span>
+                        <span class="cb-info">
+                            <strong class="up-title"><i class="fa-solid fa-shield-cat text-purple"></i> 魔法護盾過載協議</strong>
+                            <span class="up-desc">有效抑制魔導科技泡沫或風暴對「水晶資產」造成的崩盤傷害。</span>
+                        </span>
+                    </label>
+                    
+                    <label class="upgrade-checkbox-label">
+                        <input type="checkbox" value="gold_hedge" class="upgrade-cb">
+                        <span class="cb-custom"></span>
+                        <span class="cb-info">
+                            <strong class="up-title"><i class="fa-solid fa-coins text-gold"></i> 實體黃金對沖合約</strong>
+                            <span class="up-desc">優化黃金配置流動性，在避險板塊暴漲時額外獲得收益。</span>
+                        </span>
+                    </label>
+                </div>
+
+                <button type="button" id="btn-run-simulation" class="run-sim-btn cinzel-header animate-glow">
+                    <i class="fa-solid fa-circle-play"></i> 發動資產風險壓力測試
+                </button>
+            </section>
+        </div>
+
+        <!-- RIGHT: Terminal & Live Observation -->
+        <div class="terminal-side">
+            <section class="observation-panel glass-panel">
+                <div class="panel-header">
+                    <h3 class="cinzel-header"><i class="fa-solid fa-crystal-ball"></i> 命運觀測水晶球 (Simulation Terminal)</h3>
+                    <span class="status-badge" id="terminal-status"><span class="badge-dot dot-green"></span> 靜止中</span>
+                </div>
+                
+                <!-- Terminal console for live logs -->
+                <div class="simulation-terminal" id="sim-terminal">
+                    <div class="terminal-line placeholder-line">🔮 命運水晶球正處於靜止狀態。在左側配置您想進行壓力測試的資產佔比、選擇海嘯情境與避險合約，隨後點選下方「發動資產壓力測試」按鈕以開啟時間法陣，觀測公會資產在 24 個月內的演變軌跡...</div>
+                </div>
+
+                <!-- Simulation progress widget -->
+                <div class="terminal-progress-widget" id="progress-widget" style="display: none;">
+                    <div class="widget-row">
+                        <span>時間流逝中：第 <strong id="progress-month">0</strong> / 24 個月</span>
+                        <span>大盤指數：<strong id="progress-value" class="text-gold">10,000.00</strong></span>
+                    </div>
+                    <div class="widget-track">
+                        <div class="widget-bar" id="progress-bar-inner" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TEST REPORT SECTION (Hidden until test finishes) -->
+            <section class="report-panel glass-panel" id="report-result-panel" style="display: none;">
+                <h3 class="cinzel-header section-title"><i class="fa-solid fa-file-invoice-dollar"></i> 金庫風險壓力測試報告</h3>
+                
+                <div class="report-summary-cards">
+                    <!-- Gauge Card -->
+                    <div class="report-card card-mdd">
+                        <span class="card-label">最大資產縮水程度 (Max Drawdown)</span>
+                        <div class="radial-gauge-container">
+                            <svg class="radial-gauge" viewBox="0 0 100 100">
+                                <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                <circle class="gauge-fill" id="gauge-fill-circle" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                            </svg>
+                            <span class="gauge-value" id="report-mdd-val">0.00%</span>
+                        </div>
+                        <span class="gauge-desc" id="report-mdd-desc">極度安全</span>
+                    </div>
+                    <!-- Hourglass Card -->
+                    <div class="report-card card-recovery">
+                        <span class="card-label">資產完全恢復期 (Recovery Period)</span>
+                        <div class="hourglass-display">
+                            <div class="hourglass-icon" id="hourglass-wrapper">
+                                <i class="fa-solid fa-hourglass-start animate-flip"></i>
+                            </div>
+                            <span class="hourglass-val" id="report-recovery-val">7 個月</span>
+                        </div>
+                        <span class="hourglass-desc" id="report-recovery-desc">極速反彈</span>
+                    </div>
+                    <!-- Val Change Card -->
+                    <div class="report-card card-net">
+                        <span class="card-label">初始 10K 金額演變</span>
+                        <div class="val-evolution-list">
+                            <div class="evo-row"><span>初始估值：</span><strong class="text-white">10,000.00</strong></div>
+                            <div class="evo-row"><span>最低下限：</span><strong class="text-red" id="report-min-val">8,574.00</strong></div>
+                            <div class="evo-row"><span>測試終點：</span><strong class="text-green" id="report-final-val">11,850.00</strong></div>
+                        </div>
+                        <span class="evolution-desc" id="report-net-desc">獲利 +18.5%</span>
+                    </div>
+                </div>
+
+                <!-- SVG Trend Chart -->
+                <div class="chart-container-wrapper">
+                    <h4 class="chart-title"><i class="fa-solid fa-chart-line"></i> 24個月金庫總資產估值走勢圖 (Hover節點可查看明細)</h4>
+                    <div class="chart-box" id="chart-svg-container">
+                        <!-- Custom SVG Chart will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Custom Parchment advice scroll -->
+                <div class="advice-scroll-container">
+                    <h4 class="scroll-title"><i class="fa-solid fa-scroll"></i> 公會財務長避險與資產配置建議</h4>
+                    <div class="parchment-scroll">
+                        <div class="parchment-text" id="report-advice-text">
+                            <!-- Custom rendered HTML advice -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/simulator.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,439 @@
+{% extends "base.html" %}
+
+{% block title %}歷史編年史 — 冒險者金庫{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    
+    <!-- Hero Header -->
+    <section class="chronicle-hero-panel glass-panel">
+        <h2 class="cinzel-header"><i class="fa-solid fa-book-bookmark"></i> 金庫危機壓力測試編年史 (Guild Crisis Chronicles)</h2>
+        <p class="hero-desc">在此查閱公會歷次運行的時空背景壓力測試紀錄。吸取過往災難的財務教訓，以防範未來的帝國金融風暴。</p>
+    </section>
+
+    <!-- Table of Chronicles -->
+    <section class="chronicle-list-panel glass-panel">
+        <div class="panel-header">
+            <h3 class="cinzel-header"><i class="fa-solid fa-list-ol"></i> 歷史壓力測試紀錄</h3>
+            <span class="report-count-badge" id="report-count">載入中...</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="guild-table" id="reports-table">
+                <thead>
+                    <tr>
+                        <th>編號</th>
+                        <th>測試時間</th>
+                        <th>測試災難情境</th>
+                        <th>配置比例</th>
+                        <th>最大回檔率</th>
+                        <th>恢復期</th>
+                        <th>期末績效</th>
+                        <th>詳細記載</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                    <!-- Dynamic Loading via Fetch -->
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="fa-solid fa-spinner-third fa-spin fs-2"></i> 正在解鎖檔案庫，讀取歷史編年史中...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- DETAIL REPORT MODAL -->
+    <div class="guild-modal-overlay" id="report-detail-modal" style="display: none;">
+        <div class="guild-modal glass-panel">
+            <div class="modal-header">
+                <h3 class="cinzel-header" id="modal-title"><i class="fa-solid fa-feather"></i> 災難史料細節</h3>
+                <button type="button" class="modal-close-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Top details grid -->
+                <div class="modal-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">時空背景：</span>
+                        <strong id="modal-meta-disaster" class="text-gold">2020疫情大爆發</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">最大回檔率：</span>
+                        <strong id="modal-meta-mdd" class="text-red">14.26%</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">資產恢復期：</span>
+                        <strong id="modal-meta-recovery" class="text-green">7 個月</strong>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">期末總估值：</span>
+                        <strong id="modal-meta-final" class="text-green">11,850.00</strong>
+                    </div>
+                </div>
+
+                <!-- Upgrades / Hedging contracts -->
+                <div class="modal-hedges-box">
+                    <span class="meta-label">防禦與避險合約：</span>
+                    <div class="modal-tags-container" id="modal-hedges-container">
+                        <!-- Dynamic span badges -->
+                    </div>
+                </div>
+
+                <!-- Portfolio allocation display -->
+                <div class="modal-portfolio-allocation">
+                    <span class="meta-label">當時投資組合配比：</span>
+                    <div class="allocation-track" id="modal-allocation-track">
+                        <!-- Dynamic color bars -->
+                    </div>
+                    <div class="allocation-legends" id="modal-allocation-legends">
+                        <!-- Legends -->
+                    </div>
+                </div>
+
+                <!-- SVG Trend Chart inside modal -->
+                <div class="modal-chart-section">
+                    <span class="meta-label"><i class="fa-solid fa-chart-line"></i> 24個月資產估值走勢圖</span>
+                    <div class="modal-chart-box" id="modal-chart-svg-container">
+                        <!-- Re-rendered SVG折線圖 -->
+                    </div>
+                </div>
+
+                <!-- Advisory parchments -->
+                <div class="modal-advice-section">
+                    <span class="meta-label"><i class="fa-solid fa-scroll"></i> 財務長避險與資產配置建議</span>
+                    <div class="parchment-scroll">
+                        <div class="parchment-text" id="modal-advice-text">
+                            <!-- Custom rendered HTML advice -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="guild-btn secondary-btn" id="btn-modal-close-footer">關閉卷軸</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 專門用於歷史編年史頁面的 JS 邏輯
+    document.addEventListener('DOMContentLoaded', function() {
+        loadChronicles();
+        
+        // 綁定關閉 Modal 事件
+        document.getElementById('btn-close-modal').addEventListener('click', closeModal);
+        document.getElementById('btn-modal-close-footer').addEventListener('click', closeModal);
+        
+        // 點擊 Modal 外側遮罩關閉
+        document.getElementById('report-detail-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    });
+
+    // 載入歷史壓力測試記錄
+    function loadChronicles() {
+        fetch('/api/reports')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    renderTable(data.reports);
+                } else {
+                    showTableError(data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error loading reports:", err);
+                showTableError("連線至公會檔案庫失敗");
+            });
+    }
+
+    function showTableError(msg) {
+        const tbody = document.getElementById('reports-table-body');
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center text-red py-5">
+                    <i class="fa-solid fa-triangle-exclamation fs-3"></i> 載入失敗：${msg}
+                </td>
+            </tr>
+        `;
+        document.getElementById('report-count').innerText = '錯誤';
+    }
+
+    function renderTable(reports) {
+        const tbody = document.getElementById('reports-table-body');
+        const countBadge = document.getElementById('report-count');
+        
+        countBadge.innerText = `${reports.length} 筆測試載入`;
+
+        if (reports.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-5">
+                        <i class="fa-solid fa-folder-open fs-3"></i> 目前檔案庫中沒有壓力測試紀錄，請前往模擬主控台開啟您的第一次測試！
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = '';
+        reports.forEach(r => {
+            const date = new Date(r.tested_at).toLocaleString('zh-TW', { hour12: false });
+            
+            // 比例縮圖 HTML
+            const p = r.portfolio_distribution;
+            const portfolioBarHtml = `
+                <div class="table-alloc-bar" title="金:${p.gold}% | 水晶:${p.mana_crystals}% | 公債:${p.bonds}% | 蛋:${p.dragon_eggs}% | 糧:${p.supplies}%">
+                    <div class="tab-seg seg-gold" style="width: ${p.gold}%"></div>
+                    <div class="tab-seg seg-mana" style="width: ${p.mana_crystals}%"></div>
+                    <div class="tab-seg seg-bonds" style="width: ${p.bonds}%"></div>
+                    <div class="tab-seg seg-eggs" style="width: ${p.dragon_eggs}%"></div>
+                    <div class="tab-seg seg-supplies" style="width: ${p.supplies}%"></div>
+                </div>
+            `;
+
+            // 最大縮水配色 Badge
+            let mddClass = 'badge-green';
+            if (r.max_drawdown > 40.0) mddClass = 'badge-red';
+            else if (r.max_drawdown > 20.0) mddClass = 'badge-yellow';
+
+            // 恢復期文字
+            const recoveryText = r.recovery_period >= 25 ? '未能在24個月內恢復' : `${r.recovery_period} 個月`;
+            const recoveryClass = r.recovery_period >= 25 ? 'text-red' : 'text-green';
+
+            // 績效比 color-coding
+            const perfVal = r.final_total_val;
+            const netChange = ((perfVal - r.initial_total_val) / r.initial_total_val) * 100.0;
+            const netClass = netChange >= 0 ? 'text-green' : 'text-red';
+            const netPrefix = netChange >= 0 ? '+' : '';
+
+            html += `
+                <tr class="chronicle-tr">
+                    <td><strong>#${r.id}</strong></td>
+                    <td class="text-muted text-sm">${date}</td>
+                    <td><strong class="disaster-name">${r.disaster_type}</strong></td>
+                    <td>${portfolioBarHtml}</td>
+                    <td><span class="mdd-badge ${mddClass}">${r.max_drawdown}%</span></td>
+                    <td><span class="${recoveryClass}">${recoveryText}</span></td>
+                    <td><strong class="${netClass}">${netPrefix}${netChange.toFixed(1)}%</strong></td>
+                    <td>
+                        <button type="button" class="guild-btn primary-btn btn-sm" onclick="openChronicleDetail(${r.id})">
+                            <i class="fa-solid fa-scroll"></i> 查閱日誌
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    // 打開 Modal 顯示單筆詳細資料
+    window.openChronicleDetail = function(reportId) {
+        fetch(`/api/reports/${reportId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const r = data.report;
+                    
+                    // 設定基本資訊
+                    document.getElementById('modal-title').innerHTML = `<i class="fa-solid fa-book-open-cover gold-glow-text"></i> 編年史記載：#${r.id} 號壓力測試報告`;
+                    document.getElementById('modal-meta-disaster').innerText = r.disaster_type;
+                    document.getElementById('modal-meta-mdd').innerText = `${r.max_drawdown}%`;
+                    
+                    // 根據 MDD 色彩提示
+                    const mddMeta = document.getElementById('modal-meta-mdd');
+                    mddMeta.className = '';
+                    if (r.max_drawdown > 40.0) mddMeta.classList.add('text-red');
+                    else if (r.max_drawdown > 20.0) mddMeta.classList.add('text-yellow');
+                    else mddMeta.classList.add('text-green');
+
+                    // 恢復期
+                    document.getElementById('modal-meta-recovery').innerText = r.recovery_period >= 25 ? '未能在 24 個月內恢復' : `${r.recovery_period} 個月`;
+                    document.getElementById('modal-meta-recovery').className = r.recovery_period >= 25 ? 'text-red' : 'text-green';
+
+                    // 總估值
+                    const netChange = ((r.final_total_val - r.initial_total_val) / r.initial_total_val) * 100.0;
+                    const netPrefix = netChange >= 0 ? '+' : '';
+                    document.getElementById('modal-meta-final').innerHTML = `${r.final_total_val.toLocaleString('en-US', {minimumFractionDigits: 2})} <span style="font-size:0.75rem" class="${netChange >= 0 ? 'text-green':'text-red'}">(${netPrefix}${netChange.toFixed(1)}%)</span>`;
+
+                    // 避險加購項目
+                    const hedgesBox = document.getElementById('modal-hedges-container');
+                    hedgesBox.innerHTML = '';
+                    if (r.hedging_upgrades.length === 0) {
+                        hedgesBox.innerHTML = '<span class="hedge-tag tag-none">無購買任何避險升級</span>';
+                    } else {
+                        const upMap = {
+                            "guild_insurance": {title: "公會存託保險", icon: "fa-file-shield"},
+                            "cold_chain": {title: "強化冷鏈糧倉", icon: "fa-snowflake"},
+                            "shield_overdrive": {title: "魔法護盾過載協議", icon: "fa-shield-cat"},
+                            "gold_hedge": {title: "實體黃金對沖合約", icon: "fa-coins"}
+                        };
+                        r.hedging_upgrades.forEach(u => {
+                            const config = upMap[u] || {title: u, icon: "fa-shield-halved"};
+                            hedgesBox.innerHTML += `<span class="hedge-tag"><i class="fa-solid ${config.icon}"></i> ${config.title}</span>`;
+                        });
+                    }
+
+                    // 當時資產比例條
+                    const p = r.portfolio_distribution;
+                    const track = document.getElementById('modal-allocation-track');
+                    track.innerHTML = `
+                        <div class="progress-seg seg-gold" style="width: ${p.gold}%;" title="黃金: ${p.gold}%"></div>
+                        <div class="progress-seg seg-mana" style="width: ${p.mana_crystals}%;" title="水晶: ${p.mana_crystals}%"></div>
+                        <div class="progress-seg seg-bonds" style="width: ${p.bonds}%;" title="公債: ${p.bonds}%"></div>
+                        <div class="progress-seg seg-eggs" style="width: ${p.dragon_eggs}%;" title="飛龍蛋: ${p.dragon_eggs}%"></div>
+                        <div class="progress-seg seg-supplies" style="width: ${p.supplies}%;" title="糧草: ${p.supplies}%"></div>
+                    `;
+
+                    // 當時資產 Legend
+                    document.getElementById('modal-allocation-legends').innerHTML = `
+                        <div class="lg-item text-gold"><i class="fa-solid fa-coins"></i> 黃金 ${p.gold}%</div>
+                        <div class="lg-item text-mana"><i class="fa-solid fa-wand-sparkles"></i> 水晶 ${p.mana_crystals}%</div>
+                        <div class="lg-item text-bonds"><i class="fa-solid fa-scroll"></i> 公債 ${p.bonds}%</div>
+                        <div class="lg-item text-eggs"><i class="fa-solid fa-egg"></i> 飛龍蛋 ${p.dragon_eggs}%</div>
+                        <div class="lg-item text-supplies"><i class="fa-solid fa-wheat-awn"></i> 糧草 ${p.supplies}%</div>
+                    `;
+
+                    // 畫 SVG 圖
+                    drawModalSVGChart(r.chart_data);
+
+                    // 避險建議
+                    // 將 Markdown 風格的 ** 轉換為 HTML <strong>，以便羊皮紙完美渲染
+                    let parsedAdvice = r.hedging_advice
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\n\n/g, '<br><br>');
+                    document.getElementById('modal-advice-text').innerHTML = parsedAdvice;
+
+                    // 開啟遮罩
+                    document.getElementById('report-detail-modal').style.display = 'flex';
+                    document.body.style.overflow = 'hidden'; // 鎖定背景滾動
+                } else {
+                    alert("無法載入報告詳細資料: " + data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error loading report detail:", err);
+                alert("連線至檔案庫失敗");
+            });
+    }
+
+    function closeModal() {
+        document.getElementById('report-detail-modal').style.display = 'none';
+        document.body.style.overflow = ''; // 解鎖滾動
+    }
+
+    // Modal 專用折線圖繪製
+    function drawModalSVGChart(chartData) {
+        const container = document.getElementById('modal-chart-svg-container');
+        container.innerHTML = ''; // 清空
+
+        if (!chartData || chartData.length === 0) return;
+
+        const containerWidth = container.clientWidth || 750;
+        const containerHeight = 220;
+        const padding = { top: 15, right: 30, bottom: 25, left: 45 };
+
+        // 計算數值區間
+        const minVal = Math.min(...chartData.map(d => d.value));
+        const maxVal = Math.max(...chartData.map(d => d.value));
+        const valRange = maxVal - minVal;
+        
+        // 微調 Y 軸極限，保留上下 10% 空白，以防頂天立地
+        const yMin = Math.max(0, minVal - (valRange * 0.15 || 500));
+        const yMax = maxVal + (valRange * 0.15 || 500);
+        const yRange = yMax - yMin;
+
+        // 生成 SVG 字串
+        let svg = `<svg width="100%" height="${containerHeight}" viewBox="0 0 ${containerWidth} ${containerHeight}" xmlns="http://www.w3.org/2000/svg" style="background: rgba(10, 10, 16, 0.4); border-radius: 8px;">`;
+
+        // 轉換座標函式
+        function getX(month) {
+            return padding.left + (month / 24) * (containerWidth - padding.left - padding.right);
+        }
+        function getY(val) {
+            return padding.top + (1 - (val - yMin) / yRange) * (containerHeight - padding.top - padding.bottom);
+        }
+
+        // 1. 繪製 Y 軸背景參考線 (3條)
+        const levels = [yMin + yRange * 0.25, yMin + yRange * 0.5, yMin + yRange * 0.75];
+        levels.forEach(level => {
+            const y = getY(level);
+            svg += `<line x1="${padding.left}" y1="${y}" x2="${containerWidth - padding.right}" y2="${y}" stroke="rgba(255, 255, 255, 0.06)" stroke-dasharray="4 4" />`;
+            svg += `<text x="${padding.left - 8}" y="${y + 4}" fill="rgba(255, 255, 255, 0.4)" font-size="9" text-anchor="end" font-family="'Outfit', sans-serif">${Math.round(level)}</text>`;
+        });
+
+        // 2. 繪製基準線 (10000 點)
+        const y10k = getY(10000);
+        if (y10k >= padding.top && y10k <= containerHeight - padding.bottom) {
+            svg += `<line x1="${padding.left}" y1="${y10k}" x2="${containerWidth - padding.right}" y2="${y10k}" stroke="rgba(212, 175, 55, 0.25)" stroke-width="1.5" stroke-dasharray="5 3" />`;
+            svg += `<text x="${containerWidth - padding.right - 5}" y="${y10k - 5}" fill="rgba(212, 175, 55, 0.6)" font-size="9" text-anchor="end" font-family="'Outfit', sans-serif">金庫基準點 (10,000)</text>`;
+        }
+
+        // 3. 繪製漸層陰影填充
+        let shadowPoints = `M ${getX(0)} ${getY(chartData[0].value)}`;
+        chartData.forEach(d => {
+            shadowPoints += ` L ${getX(d.month)} ${getY(d.value)}`;
+        });
+        shadowPoints += ` L ${getX(24)} ${containerHeight - padding.bottom} L ${getX(0)} ${containerHeight - padding.bottom} Z`;
+
+        svg += `
+            <defs>
+                <linearGradient id="modal-chart-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="rgba(212, 175, 55, 0.25)" />
+                    <stop offset="100%" stop-color="rgba(212, 175, 55, 0.0)" />
+                </linearGradient>
+            </defs>
+            <path d="${shadowPoints}" fill="url(#modal-chart-grad)" />
+        `;
+
+        // 4. 繪製折線
+        let linePath = `M ${getX(0)} ${getY(chartData[0].value)}`;
+        chartData.forEach(d => {
+            linePath += ` L ${getX(d.month)} ${getY(d.value)}`;
+        });
+        svg += `<path d="${linePath}" fill="none" stroke="rgba(212, 175, 55, 0.95)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" filter="drop-shadow(0px 0px 4px rgba(212, 175, 55, 0.4))" />`;
+
+        // 5. 繪製 X 軸刻度 (每4個月刻一個)
+        for (let m = 0; m <= 24; m += 4) {
+            const x = getX(m);
+            svg += `<line x1="${x}" y1="${containerHeight - padding.bottom}" x2="${x}" y2="${containerHeight - padding.bottom + 4}" stroke="rgba(255, 255, 255, 0.2)" />`;
+            svg += `<text x="${x}" y="${containerHeight - padding.bottom + 16}" fill="rgba(255, 255, 255, 0.5)" font-size="9" text-anchor="middle" font-family="'Outfit', sans-serif">M${m}</text>`;
+        }
+
+        // 6. 繪製各月份的小圓點節點
+        chartData.forEach(d => {
+            const cx = getX(d.month);
+            const cy = getY(d.value);
+            
+            // 是否為極值
+            const isMin = d.value === minVal;
+            const isMax = d.value === maxVal;
+            let nodeColor = 'rgba(212, 175, 55, 1)';
+            let nodeRadius = 3;
+            
+            if (isMin) {
+                nodeColor = 'rgba(255, 75, 75, 1)';
+                nodeRadius = 4;
+            } else if (isMax) {
+                nodeColor = 'rgba(75, 255, 75, 1)';
+                nodeRadius = 4;
+            }
+
+            svg += `
+                <circle cx="${cx}" cy="${cy}" r="${nodeRadius}" fill="${nodeColor}" stroke="rgba(10, 10, 16, 0.9)" stroke-width="1" class="chart-node-dot">
+                    <title>第 ${d.month} 個月\n估值：${d.value.toFixed(2)}</title>
+                </circle>
+            `;
+        });
+
+        svg += '</svg>';
+        container.innerHTML = svg;
+    }
+</script>
+{% endblock %}
