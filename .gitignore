@@ -1,5 +1,13 @@
+adventurer_vault.db
+__pycache__/
+*.py[cod]
+*$py.class
 .venv/
+venv/
+ENV/
+env/
+.venv/
+instance/
 __pycache__/
 *.pyc
-instance/
-.env
+.DS_Store
