@@ -1,0 +1,861 @@
+/* ==========================================================================
+   主線任務系統 奇幻暗黑冒險風格 CSS
+   ========================================================================== */
+
+/* 匯入 Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+    --bg-dark: #08090d;
+    --bg-panel: rgba(18, 20, 28, 0.75);
+    --bg-glass-card: rgba(26, 29, 41, 0.45);
+    --border-gold: rgba(212, 175, 55, 0.35);
+    --border-gold-hover: rgba(212, 175, 55, 0.8);
+    --text-primary: #f0f1f5;
+    --text-muted: #9fa2b4;
+    
+    /* 核心漸變色與主題色 */
+    --gold: #d4af37;
+    --gold-glow: #ffdf7a;
+    --gold-dark: #aa7c11;
+    --exp-color: #10b981; /* 翡翠綠 */
+    --ins-color: #3b82f6; /* 星空藍 */
+    --danger: #ef4444;    /* 熔岩紅 */
+}
+
+/* 全域重設 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(at 10% 20%, rgba(26, 20, 48, 0.2) 0px, transparent 50%),
+        radial-gradient(at 90% 80%, rgba(13, 27, 42, 0.2) 0px, transparent 50%);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 60px;
+    overflow-x: hidden;
+}
+
+/* 標題專用字型 */
+h1, h2, h3, h4, .cinzel-font {
+    font-family: 'Cinzel', serif;
+    letter-spacing: 1px;
+}
+
+/* 捲動軸美化 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0d0f14;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.25);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold);
+}
+
+/* 主容器 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--gold) 50%, var(--gold-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+}
+
+.logo span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    display: block;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   冒險者狀態看板 (Adventurer Status Dashboard)
+   ========================================================================== */
+.adventurer-dashboard {
+    background: var(--bg-panel);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--border-gold);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(212, 175, 55, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 流光背景特效 */
+.adventurer-dashboard::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, transparent 70%);
+    animation: rotateGlow 30s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.adventurer-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #252836 0%, #12141c 100%);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2rem;
+}
+
+.adventurer-details h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.adventurer-details .title-tag {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 100%);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 6px;
+    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.2);
+}
+
+.adventurer-stats {
+    flex-grow: 1;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.stat-header .level-num {
+    color: var(--gold);
+}
+
+/* 經驗值條 */
+.exp-bar-container {
+    height: 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.exp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #059669 0%, var(--exp-color) 70%, #34d399 100%);
+    width: 0%;
+    transition: width 1.2s cubic-bezier(0.1, 0.8, 0.3, 1);
+    box-shadow: 0 0 10px var(--exp-color);
+}
+
+.adventurer-wallet {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 12px 25px;
+    border-radius: 12px;
+}
+
+.gold-icon {
+    font-size: 1.8rem;
+    color: var(--gold);
+    animation: pulseGold 2s infinite ease-in-out;
+}
+
+@keyframes pulseGold {
+    0%, 100% { filter: drop-shadow(0 0 2px rgba(212,175,55,0.4)); }
+    50% { filter: drop-shadow(0 0 8px rgba(212,175,55,0.8)); }
+}
+
+.gold-amount {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--gold-glow);
+    font-family: 'Cinzel', serif;
+}
+
+/* ==========================================================================
+   任務區與任務卡片 (Quest Grid & Quest Cards)
+   ========================================================================== */
+.section-title {
+    font-size: 1.6rem;
+    margin-bottom: 25px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 4px solid var(--gold);
+    padding-left: 12px;
+}
+
+.quest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+/* 磨砂玻璃卡片 */
+.quest-card {
+    background: var(--bg-glass-card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.quest-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: transparent;
+    transition: background 0.4s;
+}
+
+/* 進行中 (Active) 卡片 */
+.quest-card.active-quest {
+    border-color: var(--border-gold);
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.08);
+}
+.quest-card.active-quest::before {
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold));
+}
+
+/* 已完成 (Completed) 卡片 */
+.quest-card.completed-quest {
+    border-color: rgba(16, 185, 129, 0.25);
+    opacity: 0.85;
+}
+.quest-card.completed-quest::before {
+    background: var(--exp-color);
+}
+
+/* 未解鎖 (Locked) 卡片 */
+.quest-card.locked-quest {
+    opacity: 0.55;
+    background: rgba(10, 11, 15, 0.6);
+    border-color: rgba(255, 255, 255, 0.02);
+}
+
+/* 懸浮效果 */
+.quest-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+}
+.quest-card.active-quest:hover {
+    border-color: var(--border-gold-hover);
+    box-shadow: 0 15px 35px rgba(212, 175, 55, 0.15);
+}
+
+.quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.quest-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+}
+
+.badge-locked { background: #374151; color: var(--text-muted); }
+.badge-available { background: var(--gold-dark); color: #000; }
+.badge-active { background: #1e3a8a; color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.2); }
+.badge-completed { background: #064e3b; color: #a7f3d0; }
+
+.quest-title {
+    font-size: 1.3rem;
+    color: #fff;
+    margin-top: 8px;
+    font-weight: 700;
+}
+
+.quest-desc {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+
+/* 子目標清單 */
+.quest-objectives-preview {
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.preview-title {
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.preview-list {
+    list-style: none;
+}
+
+.preview-item {
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.preview-item:last-child {
+    margin-bottom: 0;
+}
+
+.preview-item i {
+    font-size: 0.85rem;
+}
+
+.preview-item.obj-done {
+    color: var(--text-muted);
+    text-decoration: line-through rgba(255, 255, 255, 0.2);
+}
+
+.preview-item.obj-done i {
+    color: var(--exp-color);
+}
+
+.preview-item.obj-todo i {
+    color: var(--gold-dark);
+}
+
+/* 任務獎勵 */
+.quest-rewards {
+    display: flex;
+    gap: 15px;
+    padding: 12px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 20px;
+}
+
+.reward-item {
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.reward-exp { color: var(--exp-color); }
+.reward-gold { color: var(--gold); }
+
+/* 按鈕樣式 */
+.btn {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: #000;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+}
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+    filter: brightness(1.1);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+.btn-secondary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+.quest-card.locked-quest .btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   彈出式表單視窗 (Modals)
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 5, 8, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: #11131c;
+    border: 1px solid var(--border-gold);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 580px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 175, 55, 0.1);
+    transform: scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    background: linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%);
+    padding: 25px 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    position: relative;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    color: var(--gold-glow);
+    font-weight: 700;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.modal-body {
+    padding: 30px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.story-intro-panel {
+    background: rgba(212, 175, 55, 0.03);
+    border-left: 3px solid var(--gold);
+    padding: 15px 20px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+    font-style: italic;
+}
+
+/* 表單元件 */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control {
+    width: 100%;
+    background: #090a0f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+}
+
+/* 下拉選單 */
+select.form-control {
+    cursor: pointer;
+}
+select.form-control option {
+    background: #11131c;
+    color: #fff;
+}
+
+/* 單選框組與核取方塊組 */
+.radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.radio-label, .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #cbd5e1;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+}
+
+.radio-label:hover, .checkbox-label:hover {
+    background: rgba(212, 175, 55, 0.04);
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--gold);
+    cursor: pointer;
+}
+
+/* 錯誤提示框 */
+.alert-error {
+    background: rgba(239, 68, 110, 0.1);
+    border: 1px solid var(--danger);
+    color: #fca5a5;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ==========================================================================
+   全螢幕等級提升特效與 Canvas 粒子 (Confetti / Level Up Overlay)
+   ========================================================================== */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1200;
+    pointer-events: none;
+}
+
+.levelup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(4, 5, 8, 0.9);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.levelup-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.levelup-box {
+    text-align: center;
+    transform: scale(0.7);
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.levelup-overlay.active .levelup-box {
+    transform: scale(1);
+}
+
+.levelup-title {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--gold) 40%, #fff 60%, var(--gold-dark) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shineGold 3s linear infinite;
+    text-shadow: 0 0 50px rgba(212, 175, 55, 0.6);
+    margin-bottom: 20px;
+    letter-spacing: 5px;
+}
+
+@keyframes shineGold {
+    to { background-position: 200% center; }
+}
+
+.levelup-subtitle {
+    font-size: 1.5rem;
+    color: #e2e8f0;
+    margin-bottom: 40px;
+    letter-spacing: 2px;
+}
+
+.levelup-stats-list {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 50px;
+    justify-content: center;
+}
+
+.levelup-stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 20px 30px;
+    min-width: 140px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.levelup-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.levelup-stat-val {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* ==========================================================================
+   任務建立器/管理控制台 (Quest Builder / Admin Panel)
+   ========================================================================== */
+.admin-panel {
+    background: rgba(13, 15, 23, 0.6);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 30px;
+    margin-top: 60px;
+}
+
+.admin-header {
+    margin-bottom: 20px;
+}
+
+.admin-title {
+    font-size: 1.3rem;
+    color: var(--gold-glow);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.admin-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .admin-row {
+        grid-template-columns: 1fr;
+    }
+    .adventurer-dashboard {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .adventurer-wallet {
+        justify-content: center;
+    }
+}
+
+.objective-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.objective-input-row input {
+    flex-grow: 1;
+}
+
+.objective-remove-btn {
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--danger);
+    width: 42px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.objective-remove-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--danger);
+}
+
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #11131c;
+    border: 1px solid var(--border-gold);
+    color: #fff;
+    padding: 16px 25px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: none;
+    transform: translateY(100px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.active {
+    display: block;
+    transform: translateY(0);
+}
