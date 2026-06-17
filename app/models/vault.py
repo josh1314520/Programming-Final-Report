@@ -6,39 +6,26 @@ def get_vault_status():
     獲取目前金庫中所有資產的數量。
     """
     conn = get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM vault_status WHERE id = 1")
-        row = cursor.fetchone()
-        if row:
-            return dict(row)
-        return None
-    except sqlite3.Error as e:
-        print(f"Error fetching vault status: {e}")
-        return None
-    finally:
-        conn.close()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM vault_status WHERE id = 1")
+    row = cursor.fetchone()
+    if row:
+        return dict(row)
+    return None
 
 def update_vault_status(gold, mana_crystals, bonds, dragon_eggs, supplies):
     """
     更新金庫中的各項資產數量。
     """
     conn = get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute('''
-            UPDATE vault_status 
-            SET gold = ?, mana_crystals = ?, bonds = ?, dragon_eggs = ?, supplies = ?
-            WHERE id = 1
-        ''', (gold, mana_crystals, bonds, dragon_eggs, supplies))
-        conn.commit()
-        return True
-    except sqlite3.Error as e:
-        print(f"Error updating vault status: {e}")
-        conn.rollback()
-        return False
-    finally:
-        conn.close()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE vault_status 
+        SET gold = ?, mana_crystals = ?, bonds = ?, dragon_eggs = ?, supplies = ?
+        WHERE id = 1
+    ''', (gold, mana_crystals, bonds, dragon_eggs, supplies))
+    conn.commit()
+    return True
 
 def reset_vault_status():
     """

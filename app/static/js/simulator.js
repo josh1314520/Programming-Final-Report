@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('/api/simulate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: jsonString = JSON.stringify(payload)
+            body: JSON.stringify(payload)
         })
         .then(res => res.json())
         .then(data => {

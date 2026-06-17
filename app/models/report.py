@@ -34,8 +34,6 @@ def create_report(disaster_type, portfolio_distribution, hedging_upgrades,
         print(f"Error creating stress test report: {e}")
         conn.rollback()
         return None
-    finally:
-        conn.close()
 
 def get_all_reports():
     """
@@ -58,8 +56,6 @@ def get_all_reports():
     except sqlite3.Error as e:
         print(f"Error fetching all reports: {e}")
         return []
-    finally:
-        conn.close()
 
 def get_report_by_id(report_id):
     """
@@ -80,5 +76,3 @@ def get_report_by_id(report_id):
     except sqlite3.Error as e:
         print(f"Error fetching report {report_id}: {e}")
         return None
-    finally:
-        conn.close()
