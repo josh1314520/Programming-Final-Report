@@ -53,9 +53,74 @@
                 </div>
                 <div class="stat-box">
                     <div class="stat-label">保障度 (防禦力)</div>
-                    <div class="stat-value"><i class="fas fa-shield-alt text-info"></i> {{ adventurer.security_score }}%</div>
+                    <div class="stat-value"><i class="fas fa-shield-alt text-info"></i> {{ security_score }}%</div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- 中間：金庫守護靈 -->
+    <section class="card guardian-card">
+        <h2><i class="fas fa-dragon"></i> 金庫守護靈</h2>
+        <div class="guardian-container" style="text-align: center; padding: 10px;">
+            <div class="guardian-avatar-wrapper" style="
+                width: 120px;
+                height: 120px;
+                margin: 0 auto 20px;
+                border-radius: 50%;
+                background: radial-gradient(circle, #252836 0%, #12141c 100%);
+                border: 3px solid {{ guardian.color }};
+                box-shadow: 0 0 25px {{ guardian.color }}80;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 3.5rem;
+                color: {{ guardian.color }};
+                transition: all 0.5s ease;
+            ">
+                {% if guardian.stage == 1 %}
+                    <i class="fas fa-ghost"></i>
+                {% elif guardian.stage == 2 %}
+                    <i class="fas fa-cat"></i>
+                {% elif guardian.stage == 3 %}
+                    <i class="fas fa-crow"></i>
+                {% elif guardian.stage == 4 %}
+                    <i class="fas fa-shield-halved"></i>
+                {% else %}
+                    <i class="fas fa-dragon"></i>
+                {% endif %}
+            </div>
+            
+            <h3 style="color: #fff; margin-bottom: 8px; font-family: var(--font-cinzel);">
+                {% if guardian.stage == 1 %}
+                    守護小精靈 (Stage 1)
+                {% elif guardian.stage == 2 %}
+                    光之守護獸 (Stage 2)
+                {% elif guardian.stage == 3 %}
+                    星空秘術師 (Stage 3)
+                {% elif guardian.stage == 4 %}
+                    金庫不滅聖騎士 (Stage 4)
+                {% else %}
+                    至高金域真龍 (Stage 5)
+                {% endif %}
+            </h3>
+            
+            <p style="font-size: 0.88rem; color: #a0aec0; margin-bottom: 12px;">
+                屬性偏好：
+                <strong style="color: {{ guardian.color }};">
+                    {% if guardian.risk_tolerance == 'conservative' %}
+                        保守防禦型 (Conservative)
+                    {% elif guardian.risk_tolerance == 'balanced' %}
+                        穩健平衡型 (Balanced)
+                    {% else %}
+                        積極進取型 (Aggressive)
+                    {% endif %}
+                </strong>
+            </p>
+            
+            <p style="font-size: 0.8rem; color: #718096; line-height: 1.5;">
+                守護靈會隨著您的金庫總資產增長而演化，其屬性外觀由您的風險偏好決定。
+            </p>
         </div>
     </section>
 

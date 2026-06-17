@@ -2,6 +2,7 @@ import math
 import sqlite3
 from flask import Blueprint, render_template, jsonify, request, current_app
 from app.models.dashboard import get_adventurer
+from app.models.guardian import get_guardian, update_guardian_status
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -55,12 +56,30 @@ def dashboard():
         tree_stage = 3
     else:
         tree_stage = 4
+        
+    # 獲取或更新守護靈狀態以連動總資產
+    guardian = get_guardian(1)
+    if not guardian:
+        guardian = update_guardian_status(1, assets, 'balanced')
+    else:
+        guardian = update_guardian_status(1, assets, guardian['risk_tolerance'])
+
+    # 獲取安全防禦度 (防禦力)
+    conn = sqlite3.connect(current_app.config['DATABASE'])
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT insurance_score FROM guardian WHERE student_id = '1'")
+    g_data = cursor.fetchone()
+    security_score = g_data['insurance_score'] if g_data else 50
+    conn.close()
     
     return render_template(
         'dashboard.html', 
         adventurer=adventurer,
         rating_info=rating_info,
-        tree_stage=tree_stage
+        tree_stage=tree_stage,
+        guardian=guardian,
+        security_score=security_score
     )
 
 def get_db_connection():
