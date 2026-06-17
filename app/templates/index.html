@@ -22,6 +22,13 @@
                 <h1>Adventurer's Vault</h1>
                 <span>主線任務系統 • 冒險公會發布</span>
             </div>
+            <nav class="quest-nav">
+                <a href="{{ url_for('views.index') }}" class="active"><i class="fa fa-compass"></i> 主線任務</a>
+                <a href="{{ url_for('dashboard.dashboard') }}"><i class="fa fa-tree"></i> 財富森林</a>
+                <a href="{{ url_for('news.news_page') }}"><i class="fa fa-newspaper-o"></i> 每日新聞</a>
+                <a href="{{ url_for('main.index') }}"><i class="fa fa-dashboard"></i> 模擬主控台</a>
+                <a href="{{ url_for('main.reports') }}"><i class="fa fa-history"></i> 歷史編年史</a>
+            </nav>
             <div style="font-size: 0.9rem; color: var(--text-muted);">
                 <i class="fa fa-shield" style="color: var(--gold);"></i> 冒險公會安全結界保護中
             </div>

@@ -1,0 +1,99 @@
+import sqlite3
+import math
+import os
+import unittest
+import importlib.util
+spec = importlib.util.spec_from_file_location("app_module", "app.py")
+app_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(app_module)
+create_app = app_module.create_app
+from database.init_db import init_db
+
+class TestHeroStatusAPI(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # 1. 初始化資料庫 (這會呼叫 database/init_db.py 建立 database.db 並包含我們新增的欄位)
+        # 為了測試，我們會建立或清空測試資料庫。在 Flask app context 下，預設會使用 instance/database.db。
+        init_db()
+
+    def setUp(self):
+        # 連接資料庫並插入測試資料
+        self.db_path = 'instance/database.db'
+        self.conn = sqlite3.connect(self.db_path)
+        self.cursor = self.conn.cursor()
+        
+        # 啟用外鍵
+        self.cursor.execute("PRAGMA foreign_keys = ON;")
+        
+        # 清除舊測試資料
+        self.cursor.execute("DELETE FROM investments WHERE student_id = 'test_student'")
+        self.cursor.execute("DELETE FROM guardian WHERE student_id = 'test_student'")
+        self.cursor.execute("DELETE FROM users WHERE student_id = 'test_student'")
+        self.conn.commit()
+
+        # 2. 插入測試使用者
+        self.cursor.execute("INSERT INTO users (student_id, gold, exp, level) VALUES ('test_student', 100, 10, 1)")
+        
+        # 3. 插入測試投資資產
+        # stock_value = 250000.0, cash = 10000.0 => 總資產 = 260000.0
+        self.cursor.execute(
+            "INSERT INTO investments (student_id, stock_code, shares_held, average_cost, stock_value, cash) "
+            "VALUES ('test_student', '0050', 10, 100.0, 250000.0, 10000.0)"
+        )
+        
+        # 4. 插入測試守護靈防禦/保險保障度
+        # insurance_score = 90
+        self.cursor.execute(
+            "INSERT INTO guardian (student_id, stage, color, defense, insurance_score) "
+            "VALUES ('test_student', 1, 'Green', 10, 90)"
+        )
+        self.conn.commit()
+        
+        # 建立 Flask 測試客戶端
+        self.app = create_app()
+        self.app.config['TESTING'] = True
+        self.client = self.app.test_client()
+
+    def tearDown(self):
+        # 清理測試資料
+        self.cursor.execute("DELETE FROM investments WHERE student_id = 'test_student'")
+        self.cursor.execute("DELETE FROM guardian WHERE student_id = 'test_student'")
+        self.cursor.execute("DELETE FROM users WHERE student_id = 'test_student'")
+        self.conn.commit()
+        self.conn.close()
+
+    def test_missing_student_id(self):
+        # 測試缺少 student_id 參數
+        response = self.client.get('/api/hero_status')
+        self.assertEqual(response.status_code, 400)
+        data = response.get_json()
+        self.assertIn("error", data)
+        self.assertEqual(data["error"], "Missing student_id")
+
+    def test_hero_status_success(self):
+        # 測試正常獲取 hero status
+        response = self.client.get('/api/hero_status?student_id=test_student')
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        
+        # 驗證回傳欄位
+        self.assertEqual(data["student_id"], "test_student")
+        self.assertEqual(data["attack_power"], 260000.0)
+        self.assertEqual(data["defense_power"], 90)
+        
+        # 計算預期 score: (math.log10(260000.0) * 40) + (90 * 0.6)
+        expected_score = round((math.log10(260000.0) * 40) + (90 * 0.6), 2)
+        self.assertEqual(data["hero_score"], expected_score)
+        
+        # score = ~270.59 >= 250 => Rank "SSS 財富守護神"
+        self.assertEqual(data["rank"], "SSS 財富守護神")
+        
+        expected_progress = min(100, round((expected_score / 300) * 100, 1))
+        self.assertEqual(data["progress_bar"], expected_progress)
+        
+        print("\n=== API Response ===")
+        print(data)
+        print("====================\n")
+
+if __name__ == '__main__':
+    unittest.main()

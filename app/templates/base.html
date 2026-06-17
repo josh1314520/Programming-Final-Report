@@ -29,11 +29,20 @@
                 <span class="logo-subtitle">冒險者金庫</span>
             </div>
             <nav class="guild-nav">
-                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                <a href="{{ url_for('views.index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-scroll"></i> 主線任務
+                </a>
+                <a href="{{ url_for('dashboard.dashboard') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-tree"></i> 財富森林
+                </a>
+                <a href="{{ url_for('news.news_page') }}" class="nav-link {% if request.path == '/news' %}active{% endif %}">
+                    <i class="fa-solid fa-newspaper"></i> 每日新聞
+                </a>
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.path == '/simulator' %}active{% endif %}">
                     <i class="fa-solid fa-compass"></i> 模擬主控台
                 </a>
                 <a href="{{ url_for('main.reports') }}" class="nav-link {% if request.path == '/reports' %}active{% endif %}">
-                    <i class="fa-solid fa-book-history"></i> 歷史編年史
+                    <i class="fa-solid fa-clock-rotate-left"></i> 歷史編年史
                 </a>
             </nav>
         </div>

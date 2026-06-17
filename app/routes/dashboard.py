@@ -34,7 +34,6 @@ def calculate_rating(assets):
         "next_threshold": current_tier["next_threshold"]
     }
 
-@dashboard_bp.route('/')
 @dashboard_bp.route('/dashboard')
 def dashboard():
     # Assume user ID 1 is logged in

@@ -33,8 +33,16 @@ def create_app(test_config=None):
     # 註冊 Blueprint 路由
     from app.routes.views import views_bp
     from app.routes.api import api_bp
+    from app.routes.guardian import guardian_bp
+    from app.routes.dashboard import dashboard_bp
+    from app.routes.news import news_bp
+    from app.routes.main import main_bp
     
     app.register_blueprint(views_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(guardian_bp, url_prefix='/api/guardian')
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(news_bp)
+    app.register_blueprint(main_bp)
 
     return app
